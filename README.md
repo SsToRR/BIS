@@ -60,6 +60,7 @@ The app has no notifications or messaging. It has no admin moderation workflow, 
 - `docs/week-11-speaking-script.md` — five short speaking parts and remaining Week 11 work.
 - `docs/acceptance-test-results.md` — results for AC-01–AC-30 and the complete automated suite.
 - `docs/vercel-readiness.md` — deployment constraints and required preparation.
+- `outputs/week11-testing-20261108/Acceptance_Criteria_Traceability_UPDATED.xlsx` — updated copy of the acceptance workbook with automated results for AC-01–AC-30.
 - `tests/acceptance.test.js` — end-to-end API and SQLite acceptance checks.
 - `tests/app-ui.test.js` — checks author-only UI controls.
 - `tests/post-edit.test.js` — focused automated API tests for post editing.

@@ -1,14 +1,14 @@
 # Week 11 team speaking script
 
-This script summarizes the current student social network build, the Week 11 owner-only post edit requirement, and the evidence completed so far. Allow about one minute per speaker. The acceptance checks are automated; the manual two-account browser walkthrough and workbook update remain before submission.
+This script summarizes the current student social network build, the Week 11 owner-only post edit requirement, and the evidence completed so far. Allow about one minute per speaker. Automated results are recorded in the updated traceability workbook; a manual two-account browser walkthrough remains before submission.
 
 ## Salamat Nurila — Systems Analysis and Requirements
 
-"Hello. Our project is a student social network where students can create profiles, share posts, comment, like posts, search for other students and follow them. The acceptance workbook lists 29 criteria. For Week 11, we added a thirtieth criterion: a signed-in student may edit their own post, but cannot edit another student's post. We have automated checks for all 30 criteria, and they pass. We still need to add AC-30 and record the run date and evidence in our submission copy of the traceability workbook."
+"Hello. Our project is a student social network where students can create profiles, share posts, comment, like posts, search for other students and follow them. The original acceptance workbook lists 29 criteria. For Week 11, we added a thirtieth criterion: a signed-in student may edit their own post, but cannot edit another student's post. Automated checks for all 30 criteria pass, and the updated submission copy records AC-30, the test date and evidence. We still need a manual two-account browser walkthrough before final sign-off."
 
 ## Ibrayev Miras — Testing
 
-“I am responsible for testing. The complete automated run has 42 passing checks. Thirty cover the acceptance criteria, including account registration, login, profiles, search, posts, comments, likes, follows, database persistence and owner-only post editing. Ten focused tests cover the post ownership rules and API behavior, and two check that edit controls appear only on the author's post. The remaining test work is a manual browser walkthrough with two accounts and recording the results in the submission workbook.”
+"I am responsible for testing. The complete automated run has 42 passing checks. Thirty cover the acceptance criteria, including account registration, login, profiles, search, posts, comments, likes, follows, database persistence and owner-only post editing. Ten focused tests cover the post ownership rules and API behavior, and two check that edit controls appear only on the author's post. The automated results are recorded in the updated traceability workbook. The remaining test work is a manual browser walkthrough with two accounts."
 
 ## Aidaruly Ali — Architecture and Security
 
@@ -29,7 +29,6 @@ This script summarizes the current student social network build, the Week 11 own
 **Remaining before submission:**
 
 - Walk through edit, save and cancel in a browser with the author's account; try to edit a different student's post from a second account.
-- Add AC-30 and record the test date, result and evidence in the team's submission copy of the traceability workbook.
 - Confirm whether the requested “subscription” feature means following; a separate subscription feature is not implemented.
 - Update any presentation material that still describes React, Express or PostgreSQL. This build uses browser JavaScript, Node.js HTTP and SQLite.
 

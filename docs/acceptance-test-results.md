@@ -20,4 +20,4 @@ The acceptance suite contains one automated check for each criterion AC-01 throu
 
 **Manual walkthrough still needed:** Use two browser accounts to demonstrate edit/save/cancel for the author, confirm the edited label, and attempt to edit another user's post. Automated UI checks evaluate the rendered post card; they are not a substitute for this browser walkthrough.
 
-**Traceability workbook:** The attached workbook has AC-01–AC-29 and remains unchanged. Add AC-30 and enter the run date, status and evidence into the team's submission copy.
+**Traceability workbook:** The supplied workbook has AC-01–AC-29 and remains unchanged. The updated submission copy at `outputs/week11-testing-20261108/Acceptance_Criteria_Traceability_UPDATED.xlsx` adds AC-30 and records the automated result, date and evidence for all 30 checks. Complete the manual two-account browser walkthrough before final sign-off.

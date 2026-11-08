@@ -13,7 +13,7 @@
 | React + Express + PostgreSQL architecture | Not used in this build | The current app is browser JavaScript + Node HTTP + SQLite. Update the team's slides/scripts to match or migrate the implementation. |
 | Automated checks | Passed | 42 checks pass: AC-01–AC-30, ten focused post-edit/unit checks and two UI-card rendering checks. See `docs/acceptance-test-results.md`. |
 | Manual browser walkthrough | Still to do | Walk through edit/save/cancel with the author's account and confirm a second account cannot edit another user's post. |
-| Acceptance workbook traceability | Still to do | Add AC-30 and enter the run date/status/evidence into the team's submission copy of the workbook. The attached original was not changed. |
+| Acceptance workbook traceability | Updated copy complete | `outputs/week11-testing-20261108/Acceptance_Criteria_Traceability_UPDATED.xlsx` records AC-01–AC-30 as automated passes with date and evidence. The supplied original remains unchanged; manual browser verification is pending. |
 | Subscription feature | Clarify scope | The app implements follows. A separate subscription feature is not present. Confirm whether “subscription” means following. |
 | Vercel deployment readiness | Not ready for durable hosting | This build starts a local Node server and writes to SQLite. It has no Vercel function adapter or hosted database configuration; see `docs/vercel-readiness.md`. |
 | Five-person speaking script | Prepared | `docs/week-11-speaking-script.md`; edit each first-person statement if the actual work split differs. |
