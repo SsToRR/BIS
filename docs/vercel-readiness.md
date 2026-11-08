@@ -1,14 +1,23 @@
 # Vercel readiness
 
-This repository is ready for local demonstration and automated tests. It is not ready for durable Vercel hosting in its current form.
+The repository now includes a Vercel Node Function entry point, a hosted Postgres adapter, a matching Postgres schema, and Vercel configuration. Local runs continue to use SQLite. Set `DATABASE_URL` to select Postgres; the app initializes the schema on the first `/api/health` or other database-backed request. A Vercel deployment fails at startup if `DATABASE_URL` is missing, rather than silently using an ephemeral SQLite file.
 
-The app starts one local HTTP server from `server.js` and stores application data in a SQLite file. It has no `api/` function entry point, Vercel configuration, build script or external database connection. Vercel Functions use request-based function entry points, and Vercel's guidance says a SQLite file cannot provide shared persistent application storage in serverless functions. A local SQLite file may appear to work for a request, but writes are not durable or shared across function instances.
+## One-time setup still required
 
-Before deployment, the team needs to:
+The connected Vercel team has the Neon Marketplace integration installed on its free plan, but no Neon database resource or BIS Vercel project exists yet. The available Vercel connection can inspect projects and plans but cannot provision the Neon resource. In the Vercel dashboard:
 
-1. Select and provision a hosted relational database, then migrate the schema and queries from SQLite.
-2. Adapt the Node server routes to Vercel function handlers or choose a Vercel hosting mode that fits a continuously running Node server.
-3. Configure database credentials as Vercel environment variables and keep them out of Git.
-4. Run the complete acceptance suite against the new database adapter and verify the deployed app with two accounts.
+1. Create a project for `SsToRR/BIS` (root directory `/`).
+2. Add the Neon integration's free Postgres resource to the project in Frankfurt (`fra1`), matching the function region configured in `vercel.json`.
+3. Confirm the integration adds `DATABASE_URL` to Production and Preview. Keep the connection string in Vercel only; do not commit it.
+4. Deploy the project. The first database-backed request creates the tables and indexes in `database/schema.postgres.sql`.
 
-References: [Vercel Functions](https://vercel.com/docs/functions), [Vercel's SQLite guidance](https://vercel.com/kb/guide/is-sqlite-supported-in-vercel), and [Vercel storage options](https://vercel.com/docs/storage).
+After provisioning, the deployed app should be checked through `/api/health`, registration/login, creating a post, and editing a post as its owner while a second account is rejected. Local acceptance tests still exercise SQLite; they do not claim to verify a live Neon database.
+
+## Repository deployment files
+
+- `api/[...path].js` routes `/api/*` requests into the existing API handler.
+- `database/schema.postgres.sql` creates the hosted schema, constraints, and indexes.
+- `vercel.json` includes the schema in the function bundle and configures security headers.
+- `package.json` declares the Node 24 runtime and Neon serverless driver.
+
+Vercel Functions are request handlers, so the app's local HTTP listener is used only for development. The local SQLite file is never used on Vercel. See [Vercel Functions](https://vercel.com/docs/functions), [Vercel function configuration](https://vercel.com/docs/project-configuration/vercel-json), and [Neon's serverless driver](https://neon.com/blog/serverless-driver-ga).

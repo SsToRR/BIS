@@ -4,7 +4,7 @@ A local campus community app for student profiles, a post feed, comments, likes,
 
 ## Run locally
 
-1. Use Node.js 22.13 or newer. This project has no third-party package dependencies; it uses Node's built-in HTTP, crypto, and SQLite modules.
+1. Use Node.js 24. This project uses Node's built-in HTTP, crypto, and SQLite modules for local runs; the hosted Postgres adapter uses `@neondatabase/serverless`.
 2. From this folder, start the server:
 
    ```sh
@@ -41,9 +41,9 @@ Stop the server with Ctrl+C. The SQLite file stays on disk across restarts. To r
 
 The schema lives in `database/schema.sql`. It recreates `USERS`, `POSTS`, `COMMENTS`, `LIKES`, and `FOLLOWS` from scratch, plus a `SESSIONS` table for login sessions. `docs/erd.mmd` documents the same schema and keys. Post edits update the existing `posts.content` and `posts.updated_at` fields; no schema change is needed. SQLite is used for easy, persistent local demonstration; all queries run on the server and SQLite foreign-key enforcement is enabled.
 
-The planning files propose React → Express → PostgreSQL. This implementation uses a browser-native HTML/CSS/JavaScript frontend, a small Node.js HTTP API, and SQLite because this workspace has no Node/npm package manager or network access to install React or Express. The app keeps the planned client/API/database separation, but the technology stack should be updated in the final presentation and speaking scripts to describe what is actually implemented. PostgreSQL can replace SQLite later if the team has time to migrate and verify it.
+The planning files propose React → Express → PostgreSQL. This implementation uses a browser-native HTML/CSS/JavaScript frontend and a small Node.js HTTP API. Local runs use SQLite. Vercel runs use the Neon Postgres adapter selected by `DATABASE_URL`; `database/schema.postgres.sql` mirrors the local schema and is initialized on the first API request. Vercel serves the static frontend and routes `/api/*` to `api/[...path].js`.
 
-The app has no notifications or messaging. It has no admin moderation workflow, profile editing, password reset, account deletion UI, or production deployment setup. The demo data is optional. The session database stores hashed random tokens, not session tokens in plaintext. This local HTTP setup is for classroom demonstration only. See `docs/vercel-readiness.md` before deploying: the local SQLite file must be replaced with persistent hosted storage and the server must be adapted to the chosen Vercel runtime.
+The app has no notifications or messaging. It has no admin moderation workflow, profile editing, password reset, or account deletion UI. The demo data is optional. The session database stores hashed random tokens, not session tokens in plaintext. The Vercel function adapter and Postgres schema are ready, but a Neon database still needs to be provisioned and attached to the Vercel project before deployment. See `docs/vercel-readiness.md` for the remaining setup.
 
 ## Project files
 
@@ -51,7 +51,10 @@ The app has no notifications or messaging. It has no admin moderation workflow, 
 - `post-rules.js` — shared owner and post-content rules used by the API.
 - `index.html`, `styles.css`, `app.js` — responsive user interface.
 - `database/schema.sql` — database schema and constraints.
+- `database/schema.postgres.sql` — matching hosted Postgres schema.
 - `database/seed.js` — fictional demo users and sample activity.
+- `api/[...path].js` — Vercel function entry point for `/api/*`.
+- `vercel.json` — Vercel function file inclusion and security headers.
 - `docs/erd.mmd` — Mermaid ERD source.
 - `docs/architecture.mmd` — Mermaid system architecture source.
 - `docs/demo-guide.md` — short classroom walkthrough.

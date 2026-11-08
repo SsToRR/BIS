@@ -1,0 +1,16 @@
+{
+  "name": "campus-student-social-network",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Campus student social network app with local SQLite and Vercel-hosted Postgres support.",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0"
+  }
+}

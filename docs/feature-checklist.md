@@ -15,5 +15,5 @@
 | Manual browser walkthrough | Still to do | Walk through edit/save/cancel with the author's account and confirm a second account cannot edit another user's post. |
 | Acceptance workbook traceability | Updated copy complete | `outputs/week11-testing-20261108/Acceptance_Criteria_Traceability_UPDATED.xlsx` records AC-01–AC-30 as automated passes with date and evidence. The supplied original remains unchanged; manual browser verification is pending. |
 | Subscription feature | Clarify scope | The app implements follows. A separate subscription feature is not present. Confirm whether “subscription” means following. |
-| Vercel deployment readiness | Not ready for durable hosting | This build starts a local Node server and writes to SQLite. It has no Vercel function adapter or hosted database configuration; see `docs/vercel-readiness.md`. |
+| Vercel deployment readiness | Code ready; account provisioning pending | Vercel function entry point, Postgres schema, Neon driver and deployment configuration are present. Attach a Neon resource with `DATABASE_URL`, then deploy and run live checks; see `docs/vercel-readiness.md`. |
 | Five-person speaking script | Prepared | `docs/week-11-speaking-script.md`; edit each first-person statement if the actual work split differs. |
