@@ -1,0 +1,7 @@
+flowchart LR
+  Student[Student in web browser] --> UI[HTML CSS and JavaScript interface]
+  UI -->|same-origin JSON requests| API[Node.js HTTP API]
+  API -->|parameterized SQL and foreign keys| DB[(SQLite database file)]
+  DB --> USERS[Users and sessions]
+  DB --> CONTENT[Posts comments and likes]
+  DB --> SOCIAL[Follows]

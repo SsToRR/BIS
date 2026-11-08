@@ -1,0 +1,53 @@
+erDiagram
+  USERS {
+    INTEGER user_id PK
+    TEXT full_name
+    TEXT email UK
+    TEXT password_hash
+    TEXT major
+    TEXT faculty
+    TEXT bio
+    TEXT role
+    TEXT created_at
+  }
+  POSTS {
+    INTEGER post_id PK
+    INTEGER user_id FK
+    TEXT content
+    TEXT created_at
+    TEXT updated_at
+  }
+  COMMENTS {
+    INTEGER comment_id PK
+    INTEGER post_id FK
+    INTEGER user_id FK
+    TEXT content
+    TEXT created_at
+  }
+  LIKES {
+    INTEGER like_id PK
+    INTEGER post_id FK
+    INTEGER user_id FK
+    TEXT created_at
+  }
+  FOLLOWS {
+    INTEGER follow_id PK
+    INTEGER follower_id FK
+    INTEGER following_id FK
+    TEXT created_at
+  }
+  SESSIONS {
+    INTEGER session_id PK
+    TEXT token_hash UK
+    INTEGER user_id FK
+    TEXT created_at
+    TEXT expires_at
+  }
+  USERS ||--o{ POSTS : creates
+  USERS ||--o{ COMMENTS : writes
+  POSTS ||--o{ COMMENTS : receives
+  USERS ||--o{ LIKES : makes
+  POSTS ||--o{ LIKES : receives
+  USERS ||--o{ FOLLOWS : follower
+  USERS ||--o{ FOLLOWS : followed
+  USERS ||--o{ SESSIONS : opens
