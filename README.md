@@ -43,7 +43,7 @@ The schema lives in `database/schema.sql`. It recreates `USERS`, `POSTS`, `COMME
 
 The planning files propose React → Express → PostgreSQL. This implementation uses a browser-native HTML/CSS/JavaScript frontend and a small Node.js HTTP API. Local runs use SQLite. Vercel runs use the Neon Postgres adapter selected by `DATABASE_URL`; `database/schema.postgres.sql` mirrors the local schema and is initialized on the first API request. Vercel serves the static frontend and routes `/api/*` to `api/[...path].js`.
 
-The app has no notifications or messaging. It has no admin moderation workflow, profile editing, password reset, or account deletion UI. The demo data is optional. The session database stores hashed random tokens, not session tokens in plaintext. The Vercel function adapter and Postgres schema are ready, but a Neon database still needs to be provisioned and attached to the Vercel project before deployment. See `docs/vercel-readiness.md` for the remaining setup.
+The app has no notifications or messaging. It has no admin moderation workflow, profile editing, password reset, or account deletion UI. The demo data is optional. The session database stores hashed random tokens, not session tokens in plaintext. The app is deployed on Vercel with Neon Postgres; production starts with an empty database, so register a new account there. The local SQLite demo accounts are not copied to Neon. See `docs/vercel-readiness.md` for deployment details and remaining live checks.
 
 ## Project files
 

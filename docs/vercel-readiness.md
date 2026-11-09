@@ -1,23 +1,23 @@
-# Vercel readiness
+# Vercel deployment
 
-The repository now includes a Vercel Node Function entry point, a hosted Postgres adapter, a matching Postgres schema, and Vercel configuration. Local runs continue to use SQLite. Set `DATABASE_URL` to select Postgres; the app initializes the schema on the first `/api/health` or other database-backed request. A Vercel deployment fails at startup if `DATABASE_URL` is missing, rather than silently using an ephemeral SQLite file.
+The app is deployed from the `main` branch of `SsToRR/BIS` at [bis-ashy-phi.vercel.app](https://bis-ashy-phi.vercel.app/). It uses the Vercel Node Function adapter and Neon Postgres. Production is publicly accessible; Preview deployments remain protected by Vercel Authentication.
 
-## One-time setup still required
+## Database
 
-The connected Vercel team has the Neon Marketplace integration installed on its free plan, but no Neon database resource or BIS Vercel project exists yet. The available Vercel connection can inspect projects and plans but cannot provision the Neon resource. In the Vercel dashboard:
+The Neon Marketplace resource is on the Free plan in Frankfurt. Its `DATABASE_URL` is connected to the Vercel project for Production and Preview. The function region is set to `fra1` in `vercel.json`. The first database-backed request creates tables and indexes from `database/schema.postgres.sql`. Production starts empty; the SQLite demo users and posts were not migrated.
 
-1. Create a project for `SsToRR/BIS` (root directory `/`).
-2. Add the Neon integration's free Postgres resource to the project in Frankfurt (`fra1`), matching the function region configured in `vercel.json`.
-3. Confirm the integration adds `DATABASE_URL` to Production and Preview. Keep the connection string in Vercel only; do not commit it.
-4. Deploy the project. The first database-backed request creates the tables and indexes in `database/schema.postgres.sql`.
+## Deployment files
 
-After provisioning, the deployed app should be checked through `/api/health`, registration/login, creating a post, and editing a post as its owner while a second account is rejected. Local acceptance tests still exercise SQLite; they do not claim to verify a live Neon database.
+- `api/[...].js` and the API rewrite in `vercel.json` route nested `/api/*` requests to the existing API handler.
+- `database/schema.postgres.sql` creates the hosted Postgres schema and indexes.
+- `package.json` includes the Neon serverless driver.
+- `vercel.json` includes the schema in the function bundle, sets the function region, and configures security headers.
 
-## Repository deployment files
+## Live checks completed
 
-- `api/[...].js` and the rewrite in `vercel.json` route every `/api/*` path into the existing API handler.
-- `database/schema.postgres.sql` creates the hosted schema, constraints, and indexes.
-- `vercel.json` includes the schema in the function bundle and configures security headers.
-- `package.json` declares the Node 24 runtime and Neon serverless driver.
+- `GET /api/health` returns `200` with `{"ok":true}`.
+- `GET /api/auth/me` returns JSON for a signed-out visitor.
+- A login attempt for a nonexistent account returns the expected JSON `401` response.
+- A protected likes request without a session returns the expected JSON `401` response.
 
-Vercel Functions are request handlers, so the app's local HTTP listener is used only for development. The local SQLite file is never used on Vercel. See [Vercel Functions](https://vercel.com/docs/functions), [Vercel function configuration](https://vercel.com/docs/project-configuration/vercel-json), and [Neon's serverless driver](https://neon.com/blog/serverless-driver-ga).
+The local acceptance suite also passes all 42 checks against SQLite. It does not replace a live registration/login walkthrough or the two-account post-edit check against Neon. Register an account through the production page before signing in; local demo credentials do not exist in the hosted database.
