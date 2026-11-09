@@ -53,7 +53,7 @@ The app has no notifications or messaging. It has no admin moderation workflow, 
 - `database/schema.sql` — database schema and constraints.
 - `database/schema.postgres.sql` — matching hosted Postgres schema.
 - `database/seed.js` — fictional demo users and sample activity.
-- `api/[...path].js` — Vercel function entry point for `/api/*`.
+- `api/[...].js` — Vercel function entry point for `/api/*`.
 - `vercel.json` — Vercel function file inclusion and security headers.
 - `docs/erd.mmd` — Mermaid ERD source.
 - `docs/architecture.mmd` — Mermaid system architecture source.

@@ -15,7 +15,7 @@ After provisioning, the deployed app should be checked through `/api/health`, re
 
 ## Repository deployment files
 
-- `api/[...path].js` routes `/api/*` requests into the existing API handler.
+- `api/[...].js` and the rewrite in `vercel.json` route every `/api/*` path into the existing API handler.
 - `database/schema.postgres.sql` creates the hosted schema, constraints, and indexes.
 - `vercel.json` includes the schema in the function bundle and configures security headers.
 - `package.json` declares the Node 24 runtime and Neon serverless driver.
