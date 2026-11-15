@@ -86,7 +86,7 @@ async function freePort() {
 async function startServer() {
   serverProcess = spawn(process.execPath, [path.join(root, 'server.js')], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), DB_FILE: dbFile, NODE_ENV: 'test' },
+    env: { ...process.env, PORT: String(port), DB_FILE: dbFile, NODE_ENV: 'test', SESSION_DAYS: '30', MAX_USERS: '500' },
     stdio: 'ignore'
   });
   for (let attempt = 0; attempt < 60; attempt++) {
@@ -189,17 +189,40 @@ test('AC-04 duplicate email detection ignores letter case', async () => {
   assert.equal(one('SELECT COUNT(*) AS n FROM users WHERE lower(email)=?', 'casey@student.local').n, 1);
 });
 
-test('AC-05 login sets an HttpOnly seven-day session cookie', async () => {
+test('registration stops when the 500-account campus capacity is reached', async () => {
+  const db = connect();
+  try {
+    for (let index = 0; index < 497; index++) {
+      addUser(db, { name: `Capacity Student ${index}`, email: `capacity-${index}@example.test` });
+    }
+  } finally {
+    db.close();
+  }
+  const response = await request('auth/register', { method: 'POST', token: null, body: { full_name: 'Last Student', email: 'last@student.example', major: 'Design', password: passphrase } });
+  const data = await response.json();
+  assert.equal(response.status, 409);
+  assert.match(data.error, /500-student account limit/i);
+  assert.equal(one('SELECT COUNT(*) AS n FROM users').n, 500);
+  assert.equal(one('SELECT user_id FROM users WHERE email=?', 'last@student.example'), undefined);
+});
+
+test('public metadata reports the configured session and account limits', async () => {
+  const response = await request('meta', { token: null });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { session_days: 30, max_users: 500 });
+});
+
+test('AC-05 login sets an HttpOnly 30-day session cookie', async () => {
   const before = Date.now();
   const response = await request('auth/login', { method: 'POST', token: null, body: { email: 'casey@student.local', password: passphrase } });
   const cookie = response.headers.get('set-cookie') || '';
   assert.equal(response.status, 200);
   assert.match(cookie, /HttpOnly/i);
   assert.match(cookie, /SameSite=Lax/i);
-  assert.match(cookie, /Max-Age=604800/);
+  assert.match(cookie, /Max-Age=2592000/);
   const session = one('SELECT created_at,expires_at FROM sessions WHERE user_id=? ORDER BY session_id DESC LIMIT 1', fixture.ownerId);
   const duration = Date.parse(session.expires_at) - Date.parse(session.created_at);
-  assert.ok(duration >= 7 * 86400000 - 1000 && duration <= 7 * 86400000 + 1000);
+  assert.ok(duration >= 30 * 86400000 - 1000 && duration <= 30 * 86400000 + 1000);
   assert.ok(Date.parse(session.created_at) >= before - 1000);
 });
 
@@ -352,6 +375,33 @@ test('AC-18 unlike removes one like and lowers the count', async () => {
   await request(`posts/${fixture.otherPostId}/likes`, { method: 'POST' });
   assert.equal((await request(`posts/${fixture.otherPostId}/likes`, { method: 'DELETE' })).status, 200);
   assert.equal(one('SELECT COUNT(*) AS n FROM likes WHERE post_id=? AND user_id=?', fixture.otherPostId, fixture.ownerId).n, 0);
+});
+
+test('saved posts persist, are private per student, and can be removed', async () => {
+  const save = async postId => request(`posts/${postId}/bookmark`, { method: 'POST' });
+  assert.equal((await save(fixture.ownerPostId)).status, 200);
+  assert.equal((await save(fixture.otherPostId)).status, 200);
+  assert.equal((await save(fixture.ownerPostId)).status, 200);
+
+  const savedResponse = await request('bookmarks');
+  assert.equal(savedResponse.status, 200);
+  const saved = (await savedResponse.json()).posts;
+  assert.equal(saved.length, 2);
+  assert.deepEqual(new Set(saved.map(post => post.post_id)), new Set([fixture.ownerPostId, fixture.otherPostId]));
+  assert.ok(saved.every(post => post.saved_by_me));
+
+  const otherStudentResponse = await request('bookmarks', { token: otherToken });
+  assert.deepEqual((await otherStudentResponse.json()).posts, []);
+
+  assert.equal((await request(`posts/${fixture.ownerPostId}/bookmark`, { method: 'DELETE' })).status, 200);
+  const afterRemoval = (await request('bookmarks').then(response => response.json())).posts;
+  assert.deepEqual(afterRemoval.map(post => post.post_id), [fixture.otherPostId]);
+});
+
+test('bookmark routes require a session and reject saving a missing post', async () => {
+  assert.equal((await request('bookmarks', { token: null })).status, 401);
+  assert.equal((await request(`posts/${fixture.ownerPostId}/bookmark`, { method: 'POST', token: null })).status, 401);
+  assert.equal((await request('posts/9999/bookmark', { method: 'POST' })).status, 404);
 });
 
 test('AC-19 following a student adds them to connections and the feed', async () => {

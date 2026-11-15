@@ -30,6 +30,13 @@ CREATE TABLE IF NOT EXISTS likes (
   created_at TEXT NOT NULL,
   UNIQUE(user_id, post_id)
 );
+CREATE TABLE IF NOT EXISTS bookmarks (
+  bookmark_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+  post_id INTEGER NOT NULL REFERENCES posts(post_id) ON DELETE CASCADE,
+  created_at TEXT NOT NULL,
+  UNIQUE(user_id, post_id)
+);
 CREATE TABLE IF NOT EXISTS follows (
   follow_id INTEGER PRIMARY KEY AUTOINCREMENT,
   follower_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
@@ -49,4 +56,5 @@ CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id);
 CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
 CREATE INDEX IF NOT EXISTS idx_likes_post ON likes(post_id);
+CREATE INDEX IF NOT EXISTS idx_bookmarks_user_created ON bookmarks(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_follows_following ON follows(following_id);

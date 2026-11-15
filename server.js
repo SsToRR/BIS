@@ -9,6 +9,12 @@ const PORT = Number(process.env.PORT || 3000);
 const SECURE_COOKIE = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
 const DATABASE_URL = process.env.DATABASE_URL;
 const DB_FILE = process.env.DB_FILE || path.join(ROOT, 'database', 'student-network.sqlite');
+const positiveSetting = (value, fallback, max) => {
+  const number = Number(value);
+  return Number.isInteger(number) && number >= 1 && number <= max ? number : fallback;
+};
+const SESSION_DAYS = positiveSetting(process.env.SESSION_DAYS, 30, 365);
+const MAX_USERS = positiveSetting(process.env.MAX_USERS, 500, 1000000);
 const usePostgres = Boolean(DATABASE_URL);
 if (process.env.VERCEL === '1' && !usePostgres) {
   throw new Error('DATABASE_URL must be configured for Vercel deployments.');
@@ -132,9 +138,10 @@ function text(value, field, max, { optional = false } = {}) {
 }
 
 async function postShape(row, viewerId) {
-  const [comments, liked] = await Promise.all([
+  const [comments, liked, saved] = await Promise.all([
     q('SELECT c.comment_id,c.content,c.created_at,u.user_id,u.full_name,u.major FROM comments c JOIN users u USING(user_id) WHERE c.post_id=? ORDER BY c.created_at', row.post_id),
     one('SELECT 1 FROM likes WHERE post_id=? AND user_id=?', row.post_id, viewerId),
+    one('SELECT 1 FROM bookmarks WHERE post_id=? AND user_id=?', row.post_id, viewerId),
   ]);
   return {
     ...row,
@@ -143,14 +150,15 @@ async function postShape(row, viewerId) {
     like_count: Number(row.like_count),
     comment_count: Number(row.comment_count),
     liked_by_me: !!liked,
+    saved_by_me: !!saved,
     comments: comments.map((comment) => ({ ...comment, comment_id: Number(comment.comment_id), user_id: Number(comment.user_id) })),
   };
 }
 
 async function createSession(userId, res) {
   const token = crypto.randomBytes(32).toString('base64url');
-  await run('INSERT INTO sessions(token_hash,user_id,created_at,expires_at) VALUES(?,?,?,?)', digest(token), userId, new Date().toISOString(), new Date(Date.now() + 7 * 86400000).toISOString());
-  cookie(res, token, 7 * 86400);
+  await run('INSERT INTO sessions(token_hash,user_id,created_at,expires_at) VALUES(?,?,?,?)', digest(token), userId, new Date().toISOString(), new Date(Date.now() + SESSION_DAYS * 86400000).toISOString());
+  cookie(res, token, SESSION_DAYS * 86400);
 }
 
 async function api(req, res, url) {
@@ -163,6 +171,10 @@ async function api(req, res, url) {
     return json(res, 200, { ok: true });
   }
 
+  if (method === 'GET' && route === 'meta') {
+    return json(res, 200, { session_days: SESSION_DAYS, max_users: MAX_USERS });
+  }
+
   if (method === 'POST' && route === 'auth/register') {
     const b = await body(req);
     const name = text(b.full_name, 'Name', 100);
@@ -172,6 +184,8 @@ async function api(req, res, url) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) fail(400, 'Enter a valid email address.');
     if (password.length < 8) fail(400, 'Use a password with at least 8 characters.');
     if (await one('SELECT user_id FROM users WHERE email=?', email)) fail(409, 'That email is already registered.');
+    const accountCount = await one('SELECT COUNT(*) AS count FROM users');
+    if (Number(accountCount.count) >= MAX_USERS) fail(409, `This campus has reached its ${MAX_USERS}-student account limit.`);
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = crypto.scryptSync(password, salt, 64).toString('hex');
     const inserted = await one('INSERT INTO users(full_name,email,password_hash,major,faculty,bio,role,created_at) VALUES(?,?,?,?,?,?,?,?) RETURNING user_id', name, email, `${salt}:${hash}`, major, text(b.faculty, 'Faculty', 100, { optional: true }), '', 'student', new Date().toISOString());
@@ -222,6 +236,16 @@ async function api(req, res, url) {
     return json(res, 200, { posts: await Promise.all(rows.map((post) => postShape(post, me.user_id))) });
   }
 
+  if (method === 'GET' && route === 'bookmarks') {
+    const rows = await q(`SELECT p.post_id,p.user_id,p.content,p.created_at,p.updated_at,u.full_name,u.major,
+      b.created_at AS saved_at,
+      (SELECT COUNT(*) FROM likes l WHERE l.post_id=p.post_id) AS like_count,
+      (SELECT COUNT(*) FROM comments c WHERE c.post_id=p.post_id) AS comment_count
+      FROM bookmarks b JOIN posts p USING(post_id) JOIN users u ON u.user_id=p.user_id
+      WHERE b.user_id=? ORDER BY b.created_at DESC`, me.user_id);
+    return json(res, 200, { posts: await Promise.all(rows.map((post) => postShape(post, me.user_id))) });
+  }
+
   if (method === 'GET' && route === 'posts') {
     const rows = await q(`SELECT p.post_id,p.user_id,p.content,p.created_at,p.updated_at,u.full_name,u.major,
       (SELECT COUNT(*) FROM likes l WHERE l.post_id=p.post_id) AS like_count,
@@ -262,6 +286,17 @@ async function api(req, res, url) {
     if (!await one('SELECT post_id FROM posts WHERE post_id=?', id)) fail(404, 'Post not found.');
     await run('INSERT OR IGNORE INTO likes(post_id,user_id,created_at) VALUES(?,?,?)', id, me.user_id, new Date().toISOString());
     return json(res, 200, { liked: true });
+  }
+
+  if (/^posts\/\d+\/bookmark$/.test(route) && method === 'POST') {
+    const id = Number(parts[1]);
+    if (!await one('SELECT post_id FROM posts WHERE post_id=?', id)) fail(404, 'Post not found.');
+    await run('INSERT OR IGNORE INTO bookmarks(post_id,user_id,created_at) VALUES(?,?,?)', id, me.user_id, new Date().toISOString());
+    return json(res, 200, { saved: true });
+  }
+  if (/^posts\/\d+\/bookmark$/.test(route) && method === 'DELETE') {
+    await run('DELETE FROM bookmarks WHERE post_id=? AND user_id=?', Number(parts[1]), me.user_id);
+    return json(res, 200, { saved: false });
   }
   if (/^posts\/\d+\/likes$/.test(route) && method === 'DELETE') {
     await run('DELETE FROM likes WHERE post_id=? AND user_id=?', Number(parts[1]), me.user_id);

@@ -1,19 +1,15 @@
 # Feature checklist
 
-| Area | Status | Evidence or remaining work |
+| Area | Current status | Evidence |
 | --- | --- | --- |
-| Five core relational tables | Implemented | `database/schema.sql`; plus the login `sessions` table. |
-| ERD and architecture diagram | Implemented as editable Mermaid source | `docs/erd.mmd` and `docs/architecture.mmd`. |
-| Registration, login, logout | Implemented and tested | Session, password hashing, validation and logout checks are included in `tests/acceptance.test.js`. |
-| Profiles and student search | Implemented and tested | Profile counts/order and search filtering, sorting and limits are covered in `tests/acceptance.test.js`. |
-| Posts, comments, likes | Implemented and tested | Create, edit-own, delete-own, comments and likes are covered by acceptance and post-edit tests. |
-| Follow/unfollow and connections | Implemented and tested | Follow rules, feed changes and duplicate prevention are covered in `tests/acceptance.test.js`. |
-| SQLite persistence and cascades | Implemented and tested | Restart persistence and post deletion cascades are covered in `tests/acceptance.test.js`. |
-| Seeded fictional demonstration | Implemented | `database/seed.js`; temporary credentials are in README. |
-| React + Express + PostgreSQL architecture | Not used in this build | The current app is browser JavaScript + Node HTTP + SQLite. Update the team's slides/scripts to match or migrate the implementation. |
-| Automated checks | Passed | 42 checks pass: AC-01–AC-30, ten focused post-edit/unit checks and two UI-card rendering checks. See `docs/acceptance-test-results.md`. |
-| Manual browser walkthrough | Still to do | Walk through edit/save/cancel with the author's account and confirm a second account cannot edit another user's post. |
-| Acceptance workbook traceability | Updated copy complete | `outputs/week11-testing-20261108/Acceptance_Criteria_Traceability_UPDATED.xlsx` records AC-01–AC-30 as automated passes with date and evidence. The supplied original remains unchanged; manual browser verification is pending. |
-| Subscription feature | Clarify scope | The app implements follows. A separate subscription feature is not present. Confirm whether “subscription” means following. |
-| Vercel deployment readiness | Deployed; API smoke checks passed | Production is connected to Neon, and health, auth routing, and unauthenticated API responses were verified. Live registration and two-account post-edit walkthrough remain; see `docs/vercel-readiness.md`. |
-| Five-person speaking script | Prepared | `docs/week-11-speaking-script.md`; edit each first-person statement if the actual work split differs. |
+| Product, frontend, backend, and UX requirements | Implemented | `docs/project-requirements.md` |
+| Saved posts and personal Saved page | Implemented | `app.js`, bookmark API in `server.js`, SQLite/Postgres bookmark schemas |
+| Session duration and account capacity | Implemented | 30-day default and 500-account default; configurable with `SESSION_DAYS` and `MAX_USERS` |
+| Visual redesign and responsive layout | Implemented | `styles.css`; desktop, tablet, and mobile layouts |
+| English, Kazakh, and Russian | Implemented | Language picker and message dictionaries in `app.js` |
+| Existing registration, posts, comments, likes, search, follows, and post ownership | Existing features retained | Existing API, schemas, and interface flows |
+| ERD and architecture diagram | Updated | `docs/erd.mmd` and `docs/architecture.mmd` |
+| Classroom demo and five speaking parts | Prepared | `docs/demo-guide.md` and `docs/team-speaking-script.md` |
+| Before/current comparison | Prepared | `docs/website-before-after.md` |
+| Automated checks | Passed | 46 tests passed, 0 failed on 15 November 2026. New checks cover saved posts, account capacity, and public limit metadata. See `docs/acceptance-test-results.md`. |
+| Language and responsive visual review | Partially verified | The desktop sign-in screen loaded and displayed the 30-day policy. Kazakh/Russian copy and phone-width layout still need a manual walkthrough. |

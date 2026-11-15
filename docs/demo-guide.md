@@ -1,13 +1,13 @@
 # Five-minute classroom demo
 
-Use the local app and fictional demo accounts only. Start with `node server.js`, run `node database/seed.js` if the database needs sample records, and open the local address from the README.
+Start the local app with `node server.js`, open `http://127.0.0.1:3000`, and use a fictional demo account from the README. Keep a second browser window at a narrow phone width for the mobile section.
 
-1. **0:00–0:40 — Sign in.** Log in as `casey@student.local` with `CampusDemo2026!`. Point out that this is an invented local-demo identity.
-2. **0:40–1:25 — Profile and directory.** Open the profile, then search for “Computer Science” in Find students.
-3. **1:25–2:10 — Follow.** Follow Jordan from the directory and open Connections to show the following list.
-4. **2:10–3:00 — Create and interact with a post.** Return to the feed, write a short post, like another post, and add a comment.
-5. **3:00–4:00 — Edit and ownership.** Edit the post you just created and save it. Point out that another student's card has no edit control; the API also rejects a cross-owner edit with 403, as covered by `tests/post-edit.test.js`.
-6. **4:00–4:35 — Persistence.** Refresh the page and show that the post edit, like, comment, and follow still appear.
-7. **4:35–5:30 — Explain the data.** Show `docs/erd.mmd` and `database/schema.sql`. Trace a post's `user_id`, its `updated_at`, a comment's `post_id`, and the unique like/follow constraints. Explain that the database lives in `database/student-network.sqlite`.
+1. **0:00–0:40 — Compare the design.** Show the new forest-green, cream, and lime palette, spaced feed cards, and clear navigation. Use `docs/website-before-after.md` for the old/current comparison.
+2. **0:40–1:20 — Switch languages.** Choose Қазақша and then Русский. Point out that the selected language is remembered.
+3. **1:20–2:10 — Save a post.** In the feed, select Save, open Saved posts, refresh, and remove the saved post. Explain that each bookmark is private to its owner.
+4. **2:10–2:50 — Find and follow students.** Search by major, open a student profile, follow them, and show Connections.
+5. **2:50–3:30 — Show account limits.** Open Create account and point to the 30-day sign-in duration and 500-account default campus capacity. Explain `SESSION_DAYS` and `MAX_USERS`.
+6. **3:30–4:20 — Show the phone layout.** At a narrow width, use the five-item bottom bar and show the single-column feed and compact cards.
+7. **4:20–5:10 — Explain implementation.** Show the bookmark table in `database/schema.sql`, the API and account policies in `server.js`, and the acceptance requirements in `docs/project-requirements.md`.
 
-If the class requires each student to speak, use `docs/week-11-speaking-script.md` and keep the combined narration between five and seven minutes. Everyone should use their own words and name their actual contribution. The five post-edit API tests do not establish that all 30 acceptance criteria have passed.
+The five speaking parts are in `docs/team-speaking-script.md`. Give each person their section and finish with the group closing.

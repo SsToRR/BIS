@@ -1,23 +1,18 @@
-# Week 11 acceptance test results
+# Acceptance test results
 
-**Run date:** 8 November 2026  
-**Automated result:** 42 passed, 0 failed  
-**Command:** `node --test tests/*.test.js` (Node.js 24.22.1)
+**Last run:** 15 November 2026
+**Result:** 46 passed, 0 failed
+**Command:** `node --test tests/*.test.js` using Node.js 24.22.1
 
-The acceptance suite contains one automated check for each criterion AC-01 through AC-30. Ten focused unit/API tests cover post editing, and two frontend renderer checks confirm edit/delete controls are shown only for the signed-in author's post. The suite uses a temporary SQLite database and cleans up its test files. It does not alter the local demonstration database or the supplied workbook.
+The suite retains the 30 original acceptance checks and focused post-edit/unit/UI checks. Four new API checks cover the 500-account registration cap, public limit metadata, private saved-post persistence/removal, and bookmark authentication and missing-post handling. The suite runs against a temporary SQLite database and cleans it up.
 
-| Criteria | Result | Test coverage |
+| Coverage | Result | Evidence |
 | --- | --- | --- |
-| AC-01–AC-04 | PASS | Registration, email/password validation and duplicate account handling. |
-| AC-05–AC-08 | PASS | Session cookie, login errors, logout, password hashes and session token hashes. |
-| AC-09–AC-10 | PASS | Profile counts/order and student search behavior. |
-| AC-11–AC-14 | PASS | Post creation/limits, post ownership on delete, and feed filtering/order/limit. |
-| AC-15–AC-18 | PASS | Comment validation, likes, duplicate like prevention and unlike. |
-| AC-19–AC-22 | PASS | Follow, self-follow rejection, duplicate prevention and unfollow behavior. |
-| AC-23–AC-24 | PASS | Persistence after server restart and post comment/like cascades. |
-| AC-25–AC-29 | PASS | Authentication guards, SQL injection handling, safe errors, body-size limit and CSP headers. |
-| AC-30 | PASS | Post owner can edit; another user receives 403 and the post stays unchanged. |
+| Registration, login, and 30-day sessions | PASS | `tests/acceptance.test.js`, AC-01–AC-08 |
+| 500-account registration capacity and limit metadata | PASS | Registration returns 409 at capacity; `/api/meta` returns session and account limits |
+| Saved-post privacy and persistence | PASS | Saving is idempotent; each student sees only their own saved list; removal works |
+| Profiles, feed, search, posts, comments, likes, follows | PASS | `tests/acceptance.test.js`, AC-09–AC-24 |
+| Ownership, API safety, and asset headers | PASS | `tests/acceptance.test.js`, AC-25–AC-30 |
+| Post-edit rules and author-only controls | PASS | `tests/post-edit.test.js`, `tests/post-rules.test.js`, and `tests/app-ui.test.js` |
 
-**Manual walkthrough still needed:** Use two browser accounts to demonstrate edit/save/cancel for the author, confirm the edited label, and attempt to edit another user's post. Automated UI checks evaluate the rendered post card; they are not a substitute for this browser walkthrough.
-
-**Traceability workbook:** The supplied workbook has AC-01–AC-29 and remains unchanged. The updated submission copy at `outputs/week11-testing-20261108/Acceptance_Criteria_Traceability_UPDATED.xlsx` adds AC-30 and records the automated result, date and evidence for all 30 checks. Complete the manual two-account browser walkthrough before final sign-off.
+The suite does not automate Kazakh/Russian copy review, responsive visual inspection, or a Postgres deployment run. The local sign-in page was opened in a browser and displayed the 30-day policy. The SQLite and Postgres schemas both include the bookmark relation.

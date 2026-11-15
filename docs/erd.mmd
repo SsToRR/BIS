@@ -30,6 +30,12 @@ erDiagram
     INTEGER user_id FK
     TEXT created_at
   }
+  BOOKMARKS {
+    INTEGER bookmark_id PK
+    INTEGER user_id FK
+    INTEGER post_id FK
+    TEXT created_at
+  }
   FOLLOWS {
     INTEGER follow_id PK
     INTEGER follower_id FK
@@ -48,6 +54,8 @@ erDiagram
   POSTS ||--o{ COMMENTS : receives
   USERS ||--o{ LIKES : makes
   POSTS ||--o{ LIKES : receives
+  USERS ||--o{ BOOKMARKS : saves
+  POSTS ||--o{ BOOKMARKS : bookmarked
   USERS ||--o{ FOLLOWS : follower
   USERS ||--o{ FOLLOWS : followed
   USERS ||--o{ SESSIONS : opens

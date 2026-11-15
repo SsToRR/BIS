@@ -1,7 +1,11 @@
 flowchart LR
   Student[Student in web browser] --> UI[HTML CSS and JavaScript interface]
   UI -->|same-origin JSON requests| API[Node.js HTTP API]
-  API -->|parameterized SQL and foreign keys| DB[(SQLite database file)]
-  DB --> USERS[Users and sessions]
-  DB --> CONTENT[Posts comments and likes]
-  DB --> SOCIAL[Follows]
+  API -->|local| SQLite[(SQLite database file)]
+  API -->|DATABASE_URL| Postgres[(Neon Postgres)]
+  SQLite --> USERS[Users and sessions]
+  SQLite --> CONTENT[Posts comments likes and saved posts]
+  SQLite --> SOCIAL[Follows]
+  Postgres --> USERS
+  Postgres --> CONTENT
+  Postgres --> SOCIAL
