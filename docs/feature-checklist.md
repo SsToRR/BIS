@@ -2,14 +2,16 @@
 
 | Area | Current status | Evidence |
 | --- | --- | --- |
-| Product, frontend, backend, and UX requirements | Implemented | `docs/project-requirements.md` |
-| Saved posts and personal Saved page | Implemented | `app.js`, bookmark API in `server.js`, SQLite/Postgres bookmark schemas |
-| Session duration and account capacity | Implemented | 30-day default and 500-account default; configurable with `SESSION_DAYS` and `MAX_USERS` |
-| Visual redesign and responsive layout | Implemented | `styles.css`; desktop, tablet, and mobile layouts |
-| English, Kazakh, and Russian | Implemented | Language picker and message dictionaries in `app.js` |
+| Campus events, unique attendance, and FIFO waitlists | Implemented | `events` and `event_rsvps` in both schemas; event APIs and event page in `server.js` and `app.js` |
+| Co-working sessions | Implemented | Study together page with topic, place, start time, capacity, attendees, and queue |
+| Adaptive admin-managed account capacity | Implemented | Persistent `app_settings` value, restricted admin routes, and Admin settings page |
+| Accessibility settings and mobile navigation | Implemented | Larger text, contrast, reduced motion, skip link, keyboard focus, responsive navigation |
+| Translate posts into the selected UI language | Implemented | Authenticated translation route proxies to MyMemory and discloses the provider before sending text |
+| Focus and break timer | Implemented | Browser-saved 25-minute and 5-minute timer controls on the Study together page |
+| Existing posts, saves, session duration, and localization | Retained | Existing features remain; `SESSION_DAYS` and `MAX_USERS` seed initial policy values |
 | Existing registration, posts, comments, likes, search, follows, and post ownership | Existing features retained | Existing API, schemas, and interface flows |
 | ERD and architecture diagram | Updated | `docs/erd.mmd` and `docs/architecture.mmd` |
-| Classroom demo and five speaking parts | Prepared | `docs/demo-guide.md` and `docs/team-speaking-script.md` |
+| Classroom demo and six speaking parts | Prepared | `docs/demo-guide.md`, `docs/team-speaking-script.md`, and team handoff DOCX |
 | Before/current comparison | Prepared | `docs/website-before-after.md` |
-| Automated checks | Passed | 46 tests passed, 0 failed on 15 November 2026. New checks cover saved posts, account capacity, and public limit metadata. See `docs/acceptance-test-results.md`. |
+| Existing automated checks | Existing results retained | `docs/acceptance-test-results.md` predates the new event, admin, translation, and timer work. |
 | Language and responsive visual review | Partially verified | The desktop sign-in screen loaded and displayed the 30-day policy. Kazakh/Russian copy and phone-width layout still need a manual walkthrough. |

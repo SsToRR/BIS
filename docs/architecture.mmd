@@ -3,9 +3,12 @@ flowchart LR
   UI -->|same-origin JSON requests| API[Node.js HTTP API]
   API -->|local| SQLite[(SQLite database file)]
   API -->|DATABASE_URL| Postgres[(Neon Postgres)]
+  API -->|authenticated translation request| Translate[MyMemory translation service]
   SQLite --> USERS[Users and sessions]
   SQLite --> CONTENT[Posts comments likes and saved posts]
   SQLite --> SOCIAL[Follows]
+  SQLite --> CAMPUS[Events study sessions RSVPs and app settings]
   Postgres --> USERS
   Postgres --> CONTENT
   Postgres --> SOCIAL
+  Postgres --> CAMPUS

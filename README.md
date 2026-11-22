@@ -11,8 +11,9 @@ A campus community app for student profiles, a post feed, comments, likes, stude
    node server.js
    ```
 
-3. Open `http://127.0.0.1:3000` in a browser. The database is created at `database/student-network.sqlite` the first time the server starts. Set `PORT` or `DB_FILE` to change those defaults. Account policy can be adjusted with `SESSION_DAYS` (default 30, range 1–365) and `MAX_USERS` (default 500, range 1–1,000,000).
-4. To populate a fresh or existing database with fictional sample records, run:
+3. Open `http://127.0.0.1:3000` in a browser. The database is created at `database/student-network.sqlite` the first time the server starts. Set `PORT` or `DB_FILE` to change those defaults. Account policy starts with `SESSION_DAYS` (default 30, range 1–365) and `MAX_USERS` (default 500, range 1–1,000,000). Once the first administrator is set up, the account cap can be changed in Admin settings.
+4. To set up the first administrator, configure a one-time `ADMIN_BOOTSTRAP_TOKEN` with at least 32 characters in the server environment. Register and sign in with the account that should be the administrator, open **Admin settings**, and enter that key. Remove the environment variable after setup. On Vercel, use the project environment settings and redeploy after adding or removing the key.
+5. To populate a fresh or existing database with fictional sample records, run:
 
    ```sh
    /Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node database/seed.js
@@ -28,6 +29,11 @@ Stop the server with Ctrl+C. The SQLite file stays on disk across restarts. To r
 
 - Student registration and login with scrypt password hashes and a 30-day, HttpOnly session cookie by default.
 - A configurable campus account cap (500 by default); registration receives a clear capacity error when full.
+- Admin-managed campus account capacity, with a one-time secret bootstrap for the first administrator.
+- Student-created campus events and co-working sessions with unique RSVPs, capacity counts, and a FIFO waitlist that promotes the next student when a place opens.
+- A personal 25-minute focus timer and 5-minute break timer on the Study together page.
+- Per-post translation into the selected interface language. Translation controls disclose that post text is sent to MyMemory when requested.
+- Accessibility preferences for larger text, higher contrast, and reduced motion, saved in the browser.
 - Student profiles, post creation, and owner-only post editing and deletion.
 - Feed of the signed-in student's posts and posts from students they follow.
 - Comments and likes; a database constraint prevents duplicate likes.
@@ -38,15 +44,15 @@ Stop the server with Ctrl+C. The SQLite file stays on disk across restarts. To r
 - SQLite foreign keys and cascading cleanup for deleted users or posts.
 - Parameterized SQL, server-side input checks, same-origin API, generic server error responses, and a restrictive content security policy.
 - A sample-data seed script, schema file, ERD, architecture diagram, API overview, and demo guide in `docs/`.
-- The automated suite has 46 passing checks, including new tests for saved posts, account capacity, public limit metadata, and the 30-day session. Run with `node --test tests/*.test.js`; see `docs/acceptance-test-results.md`. Language copy and responsive layouts still need a manual walkthrough.
+- The existing acceptance report records 46 passing baseline checks for authentication, posts, saves, session duration, and account capacity. That report predates the new event, admin, translation, and timer features; see `docs/acceptance-test-results.md` for its scope.
 
 ## Database and architecture
 
-The schema lives in `database/schema.sql`. It contains `USERS`, `POSTS`, `COMMENTS`, `LIKES`, `BOOKMARKS`, and `FOLLOWS`, plus a `SESSIONS` table for login sessions. `docs/erd.mmd` documents the schema and keys. Bookmarks are unique per student and post. SQLite is used for easy, persistent local demonstration; all queries run on the server and SQLite foreign-key enforcement is enabled.
+The schema lives in `database/schema.sql`. It contains users, posts, comments, likes, bookmarks, follows, events, event RSVPs, application settings, and sessions. `docs/erd.mmd` documents the relationships. Bookmarks and event RSVPs are unique per student and content item. SQLite is used for local demonstration; queries run on the server and SQLite foreign-key enforcement is enabled.
 
 The planning files propose React → Express → PostgreSQL. This implementation uses a browser-native HTML/CSS/JavaScript frontend and a small Node.js HTTP API. Local runs use SQLite. Vercel runs use the Neon Postgres adapter selected by `DATABASE_URL`; `database/schema.postgres.sql` mirrors the local schema and is initialized on the first API request. Vercel serves the static frontend and routes `/api/*` to `api/[...path].js`.
 
-The app has no notifications or messaging. It has no admin moderation workflow, profile editing, password reset, or account deletion UI. The demo data is optional. The session database stores hashed random tokens, not session tokens in plaintext. The app is deployed on Vercel with Neon Postgres; production starts with an empty database, so register a new account there. The local SQLite demo accounts are not copied to Neon. See `docs/vercel-readiness.md` for deployment details and remaining live checks.
+The app has no notifications, messaging, admin moderation, profile editing, password reset, or account deletion UI. The demo data is optional. The session database stores hashed random tokens, not session tokens in plaintext. The app is deployed on Vercel with Neon Postgres; production starts with an empty database, so register a new account there. The local SQLite demo accounts are not copied to Neon. See `docs/vercel-readiness.md` for deployment details and remaining live checks.
 
 ## Project files
 
@@ -62,7 +68,8 @@ The app has no notifications or messaging. It has no admin moderation workflow, 
 - `docs/architecture.mmd` — Mermaid system architecture source.
 - `docs/demo-guide.md` — short classroom walkthrough.
 - `docs/project-requirements.md` — requirements, API, design, responsive, and acceptance specifications.
-- `docs/team-responsibilities.md` — five-person task ownership.
+- `docs/team-responsibilities.md` — six-person task ownership.
+- `docs/team-changes-and-speaking-scripts.docx` — member-by-member changes and presentation scripts for all six students.
 - `docs/team-speaking-script.md` — one presentation speech for each team member.
 - `docs/website-before-after.md` — previous/current interface comparison and walkthrough.
 - `docs/feature-checklist.md` — implementation and verification status.

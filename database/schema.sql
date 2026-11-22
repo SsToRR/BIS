@@ -52,9 +52,33 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at TEXT NOT NULL,
   expires_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS events (
+  event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+  kind TEXT NOT NULL DEFAULT 'event' CHECK(kind IN ('event','study')),
+  title TEXT NOT NULL CHECK(length(title) BETWEEN 1 AND 100),
+  description TEXT NOT NULL DEFAULT '' CHECK(length(description) <= 500),
+  location TEXT NOT NULL CHECK(length(location) BETWEEN 1 AND 160),
+  starts_at TEXT NOT NULL,
+  capacity INTEGER NOT NULL CHECK(capacity BETWEEN 1 AND 500),
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS event_rsvps (
+  rsvp_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  event_id INTEGER NOT NULL REFERENCES events(event_id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+  created_at TEXT NOT NULL,
+  UNIQUE(event_id, user_id)
+);
+CREATE TABLE IF NOT EXISTS app_settings (
+  setting_key TEXT PRIMARY KEY,
+  setting_value TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id);
 CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
 CREATE INDEX IF NOT EXISTS idx_likes_post ON likes(post_id);
 CREATE INDEX IF NOT EXISTS idx_bookmarks_user_created ON bookmarks(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_follows_following ON follows(following_id);
+CREATE INDEX IF NOT EXISTS idx_events_kind_starts ON events(kind, starts_at);
+CREATE INDEX IF NOT EXISTS idx_event_rsvps_queue ON event_rsvps(event_id, rsvp_id);

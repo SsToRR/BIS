@@ -1,27 +1,31 @@
 # Team presentation speeches
 
-Use the parts in this order. Each speech is about 35–50 seconds at a normal speaking pace. Adjust first-person claims if the actual work split differs.
+Use the parts in this order. Each section describes the feature assigned to that person.
 
-## Nurila — Requirements and user experience
+## Salamat Nurila — Campus events and waiting list
 
-“I worked on the requirements for our student community and connected them to the screens and API behavior. A student can register or sign in, create and manage their own posts, find classmates, follow them, and save useful posts to a private list. We also specified the account rules, supported languages, and responsive layouts so the team could build and demonstrate the same user journey. The requirements and acceptance evidence are in our project specification.”
+“I added campus events with a seat limit and a registration queue. A student can create an event, join it once, and see how many seats are left. When the event is full, new sign-ups go to a waiting list. If a student cancels, the next person in line moves into an open seat automatically. The database also prevents the same student from registering twice.”
 
-## Miras — Saved posts feature
+## Ibrayev Miras — Co-working study sessions
 
-“I added saved posts as a new feature. A student can save a post from the feed, find it later on the Saved posts page, and remove it from that list. The server stores each save in its own database relation, prevents duplicate saves, and returns only the signed-in student’s saved posts. This means the list persists after refresh and stays private to its owner.”
+“I added a Study together page for small co-working sessions. A student can post a topic, place, time, and number of seats, then classmates can join the session. The page shows who is attending and how many places remain. The same unique registration and waiting-list behavior keeps each study group within its seat limit.”
 
-## Ali — Session and account limits
+## Aidaruly Ali — Administrator-managed capacity
 
-“I added clear limits for account access and campus size. A student’s sign-in lasts up to 30 days, and the campus accepts up to 500 student accounts by default. The server checks the session expiry on each authenticated request and rejects registration when the account cap is reached. Both numbers can be changed through `SESSION_DAYS` and `MAX_USERS`, so the policy is explicit and adjustable.”
+“I made the campus account limit adjustable by an administrator. The first administrator is enabled with a one-time setup key, and then the administrator can change the maximum from the app. The limit is stored in the database and registration checks the saved value, so the policy continues to apply after a restart.”
 
-## Nazgul — Design and mobile experience
+## Khurshitova Nazgul — Accessibility and phone layout
 
-“I redesigned the site with a calmer campus look, clearer cards, stronger headings, and easier-to-find actions. On a wide screen, navigation, the feed, and campus context have separate spaces. On a phone, the content becomes one column and the main destinations move to a fixed bottom bar. The language picker, post actions, and forms also remain usable at smaller widths.”
+“I added settings for larger text, higher contrast, and reduced motion. Students can change these preferences before signing in or while using the app, and the choices are remembered in their browser. I also added a skip link and stronger keyboard focus. The phone navigation now includes the event and study pages as well as the existing destinations.”
 
-## Aikhanym — Kazakh and Russian languages
+## Saken Aikhanym — Translate posts
 
-“I added Kazakh and Russian alongside English. Students can choose a language before signing in or from the main screen, and the choice is remembered in their browser. Navigation, forms, buttons, empty states, confirmations, common error messages, and relative post times use the chosen language. This makes the app easier to use for more of our campus community.”
+“I added a translate control to each post. A student chooses the language the post is written in, and the app translates it into the current interface language, which can be English, Kazakh, or Russian. The original post remains visible. Before translating, the control explains that the post text is sent to MyMemory through our server.”
+
+## Almat — Focus timer
+
+“I added a focus timer to help students use a co-working session well. It starts with a 25-minute study sprint and also has a five-minute break mode. Students can start, pause, or reset the timer, and their progress is kept in the browser if they change pages or refresh.”
 
 ## Group closing
 
-“Together, we updated the requirements, added a useful saved-post feature, made access limits clear, redesigned the mobile experience, and added Kazakh and Russian. We will now show the changes in the running app.”
+“Together, we added campus events and study sessions, made attendance and campus capacity manageable, improved accessibility, and added post translation and a focus timer. We will now show the features in the running app.”

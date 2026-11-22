@@ -49,6 +49,28 @@ erDiagram
     TEXT created_at
     TEXT expires_at
   }
+  EVENTS {
+    INTEGER event_id PK
+    INTEGER user_id FK
+    TEXT kind
+    TEXT title
+    TEXT description
+    TEXT location
+    TEXT starts_at
+    INTEGER capacity
+    TEXT created_at
+  }
+  EVENT_RSVPS {
+    INTEGER rsvp_id PK
+    INTEGER event_id FK
+    INTEGER user_id FK
+    TEXT created_at
+    UNIQUE event_id_user_id
+  }
+  APP_SETTINGS {
+    TEXT setting_key PK
+    TEXT setting_value
+  }
   USERS ||--o{ POSTS : creates
   USERS ||--o{ COMMENTS : writes
   POSTS ||--o{ COMMENTS : receives
@@ -59,3 +81,6 @@ erDiagram
   USERS ||--o{ FOLLOWS : follower
   USERS ||--o{ FOLLOWS : followed
   USERS ||--o{ SESSIONS : opens
+  USERS ||--o{ EVENTS : hosts
+  EVENTS ||--o{ EVENT_RSVPS : reserves
+  USERS ||--o{ EVENT_RSVPS : joins

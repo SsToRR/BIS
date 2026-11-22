@@ -14,6 +14,13 @@ const messages = {
     fullName: 'Full name', major: 'Major', faculty: 'Faculty', optional: 'optional', universityEmail: 'University email', password: 'Password', yourName: 'Your name', majorExample: 'e.g. Information Systems', facultyExample: 'e.g. Business School', emailExample: 'you@university.edu', passwordHint: 'At least 8 characters', signIn: 'Sign in', createAccount: 'Create account', newHere: 'New around here?', alreadyAccount: 'Already have an account?', joinLink: 'Create an account', loginLink: 'Sign in', sessionPolicy: 'Sign-in lasts up to {days} days.', accountPolicy: 'Campus capacity: {count} student accounts.',
     justNow: 'Just now', welcomeBack: 'Welcome back!', welcomeCampus: 'Welcome to Campus!', postShared: 'Your post is up!', postUpdated: 'Your post was updated.', postDeleted: 'Post deleted.', postSaved: 'Saved for later.', postUnsaved: 'Removed from saved posts.',
     errorGeneric: 'Something went wrong. Please try again.', errorLogin: 'Please log in to continue.', errorEmail: 'Enter a valid email address.', errorPassword: 'Use a password with at least 8 characters.', errorDuplicate: 'That email is already registered.', errorCredentials: 'Email or password is incorrect.', errorPost: 'Post must be between 1 and 2000 characters.', errorComment: 'Comment must be between 1 and 500 characters.', errorNotFound: 'Post not found.', errorOwnerEdit: 'You can only edit your own posts.', errorOwnerDelete: 'You can only delete your own posts.', errorCapacity: 'This campus has reached its {count}-student account limit.', errorAccount: 'Name, major, and required fields must be completed.',
+    eventsNav: 'Events', eventsTitle: 'Campus events', eventsSubtitle: 'Find a campus activity and save your place.', studyNav: 'Study together', studyTitle: 'Study together', studySubtitle: 'Set up a quiet co-working session and invite classmates.', adminNav: 'Admin settings',
+    createEvent: 'Create an event', createStudy: 'Create a study session', titleLabel: 'Title', descriptionLabel: 'Details', locationLabel: 'Place', dateTimeLabel: 'Date and time', capacityLabel: 'Seats', publishEvent: 'Publish event', publishStudy: 'Publish session',
+    attendees: 'attending', waitingList: 'waiting', host: 'Hosted by', joinEvent: 'Join event', joinStudy: 'Join session', joinWaitlist: 'Join waitlist', leaveEvent: 'Cancel RSVP', onWaitlist: 'Waitlist position {position}', noEvents: 'No upcoming sessions', noEventsBody: 'Create the first one for your campus.', eventCreated: 'Your event is on the calendar.', studyCreated: 'Your study session is ready.',
+    translate: 'Translate', translationLabel: 'Translation', translateFrom: 'Post language', translateDisclosure: 'The post text will be sent to MyMemory to provide this translation.', translating: 'Translating…', translationFailed: 'Could not translate this post. Try again later.', translationSameLanguage: 'Choose a post language different from your interface language.', sourceEnglish: 'English', sourceKazakh: 'Kazakh', sourceRussian: 'Russian',
+    accessibility: 'Accessibility', textSize: 'Larger text', highContrast: 'High contrast', reduceMotion: 'Reduce motion',
+    focusTitle: 'Focus timer', focusSubtitle: 'A quiet sprint for your next study session.', focusSprint: '25 minute focus', shortBreak: '5 minute break', startTimer: 'Start', pauseTimer: 'Pause', resetTimer: 'Reset', focusFinished: 'Focus sprint complete. Take a short break.', breakFinished: 'Break finished. Ready for another focus sprint?',
+    adminTitle: 'Campus capacity', adminSubtitle: 'Set the maximum number of student accounts allowed to register.', bootstrapTitle: 'Set up the first administrator', bootstrapDescription: 'Enter the one-time setup key from the project owner.', setupKey: 'Administrator setup key', claimAdmin: 'Enable administrator access', accountCapacity: 'Maximum student accounts', currentStudents: '{count} student accounts are registered.', saveCapacity: 'Save capacity', capacitySaved: 'Campus capacity updated.',
   },
   kk: {
     brandSub: 'студенттер қауымдастығы', student: 'Студент', language: 'Тіл', home: 'Жаңалықтар', discover: 'Студенттерді табу', follow: 'Жазылу', savedNav: 'Сақталған жазбалар', connections: 'Байланыстар', profile: 'Профилім', logout: 'Шығу', campus: 'СІЗДІҢ КАМПУСЫҢЫЗ', account: 'АККАУНТ', authKicker: 'КАМПУС ҚАУЫМДАСТЫҒЫ',
@@ -44,15 +51,93 @@ const messages = {
     errorGeneric: 'Что-то пошло не так. Попробуйте ещё раз.', errorLogin: 'Войдите, чтобы продолжить.', errorEmail: 'Введите корректный адрес электронной почты.', errorPassword: 'Используйте пароль не короче 8 символов.', errorDuplicate: 'Этот адрес уже зарегистрирован.', errorCredentials: 'Неверная почта или пароль.', errorPost: 'Пост должен содержать от 1 до 2000 символов.', errorComment: 'Комментарий должен содержать от 1 до 500 символов.', errorNotFound: 'Пост не найден.', errorOwnerEdit: 'Вы можете изменять только свои посты.', errorOwnerDelete: 'Вы можете удалять только свои посты.', errorCapacity: 'Достигнут лимит кампуса: {count} аккаунтов студентов.', errorAccount: 'Заполните имя, специальность и обязательные поля.',
   },
 };
+Object.assign(messages.kk, {
+  eventsNav: 'Іс-шаралар', eventsTitle: 'Кампус іс-шаралары', eventsSubtitle: 'Іс-шара тауып, қатысу орныңызды сақтаңыз.', studyNav: 'Бірге оқу', studyTitle: 'Бірге оқу', studySubtitle: 'Тыныш оқу кездесуін ұйымдастырып, курстастарыңызды шақырыңыз.', adminNav: 'Әкімші параметрлері',
+  createEvent: 'Іс-шара қосу', createStudy: 'Оқу кездесуін қосу', titleLabel: 'Атауы', descriptionLabel: 'Сипаттамасы', locationLabel: 'Өтетін орны', dateTimeLabel: 'Күні мен уақыты', capacityLabel: 'Орын саны', publishEvent: 'Жариялау', publishStudy: 'Кездесуді жариялау', attendees: 'қатысушы', waitingList: 'күту тізімі', host: 'Ұйымдастырушы', joinEvent: 'Қатысу', joinStudy: 'Кездесуге қосылу', joinWaitlist: 'Күту тізіміне қосылу', leaveEvent: 'Қатысудан бас тарту', onWaitlist: 'Күту тізіміндегі орны: {position}', noEvents: 'Алдағы кездесулер жоқ', noEventsBody: 'Кампусыңызда алғашқы кездесуді ұйымдастырыңыз.', eventCreated: 'Іс-шара күнтізбеге қосылды.', studyCreated: 'Оқу кездесуі жарияланды.',
+  translate: 'Аудару', translationLabel: 'Аударма', translateFrom: 'Жазба тілі', translateDisclosure: 'Аударма жасау үшін жазба мәтіні MyMemory қызметіне жіберіледі.', translating: 'Аударылуда…', translationFailed: 'Жазбаны аудару мүмкін болмады. Кейін қайталап көріңіз.', translationSameLanguage: 'Жазба тілінен басқа аудару тілін таңдаңыз.', sourceEnglish: 'Ағылшын тілі', sourceKazakh: 'Қазақ тілі', sourceRussian: 'Орыс тілі',
+  accessibility: 'Қолжетімділік', textSize: 'Үлкен қаріп', highContrast: 'Жоғары контраст', reduceMotion: 'Қозғалысты азайту', focusTitle: 'Зейін таймері', focusSubtitle: 'Келесі оқу сессиясына тыныш таймер.', focusSprint: '25 минут оқу', shortBreak: '5 минут үзіліс', startTimer: 'Бастау', pauseTimer: 'Үзіліс', resetTimer: 'Қайта бастау', focusFinished: 'Оқу уақыты аяқталды. Қысқа үзіліс жасаңыз.', breakFinished: 'Үзіліс аяқталды. Қайта оқуға дайынсыз ба?',
+  adminTitle: 'Кампус сыйымдылығы', adminSubtitle: 'Тіркеле алатын студент аккаунттарының ең көп санын белгілеңіз.', bootstrapTitle: 'Алғашқы әкімшіні орнату', bootstrapDescription: 'Жоба иесінен алынған бір реттік кілтті енгізіңіз.', setupKey: 'Әкімші кілті', claimAdmin: 'Әкімші рөлін қосу', accountCapacity: 'Студент аккаунттарының шегі', currentStudents: 'Тіркелген студент аккаунттары: {count}.', saveCapacity: 'Шекті сақтау', capacitySaved: 'Кампус шегі жаңартылды.',
+});
+Object.assign(messages.ru, {
+  eventsNav: 'События', eventsTitle: 'События кампуса', eventsSubtitle: 'Найдите событие и забронируйте место.', studyNav: 'Учиться вместе', studyTitle: 'Учиться вместе', studySubtitle: 'Создайте совместную учебную встречу и пригласите однокурсников.', adminNav: 'Настройки администратора',
+  createEvent: 'Создать событие', createStudy: 'Создать учебную встречу', titleLabel: 'Название', descriptionLabel: 'Описание', locationLabel: 'Место', dateTimeLabel: 'Дата и время', capacityLabel: 'Места', publishEvent: 'Опубликовать событие', publishStudy: 'Опубликовать встречу', attendees: 'участников', waitingList: 'в листе ожидания', host: 'Организатор', joinEvent: 'Записаться', joinStudy: 'Присоединиться', joinWaitlist: 'Встать в лист ожидания', leaveEvent: 'Отменить запись', onWaitlist: 'Место в листе ожидания: {position}', noEvents: 'Предстоящих встреч пока нет', noEventsBody: 'Создайте первую встречу для кампуса.', eventCreated: 'Событие добавлено в календарь.', studyCreated: 'Учебная встреча опубликована.',
+  translate: 'Перевести', translationLabel: 'Перевод', translateFrom: 'Язык поста', translateDisclosure: 'Текст поста будет отправлен в MyMemory для перевода.', translating: 'Переводим…', translationFailed: 'Не удалось перевести пост. Попробуйте позже.', translationSameLanguage: 'Выберите язык поста, отличный от языка интерфейса.', sourceEnglish: 'Английский', sourceKazakh: 'Казахский', sourceRussian: 'Русский',
+  accessibility: 'Доступность', textSize: 'Крупный текст', highContrast: 'Высокая контрастность', reduceMotion: 'Меньше анимации', focusTitle: 'Таймер фокуса', focusSubtitle: 'Тихий таймер для следующей учебной сессии.', focusSprint: '25 минут учёбы', shortBreak: 'Перерыв 5 минут', startTimer: 'Начать', pauseTimer: 'Пауза', resetTimer: 'Сбросить', focusFinished: 'Учебный спринт завершён. Сделайте короткий перерыв.', breakFinished: 'Перерыв окончен. Готовы продолжить?',
+  adminTitle: 'Вместимость кампуса', adminSubtitle: 'Установите максимальное число аккаунтов студентов.', bootstrapTitle: 'Настройка первого администратора', bootstrapDescription: 'Введите одноразовый ключ от владельца проекта.', setupKey: 'Ключ администратора', claimAdmin: 'Включить роль администратора', accountCapacity: 'Максимум аккаунтов студентов', currentStudents: 'Зарегистрировано аккаунтов: {count}.', saveCapacity: 'Сохранить лимит', capacitySaved: 'Лимит кампуса обновлён.',
+});
 
 const storedLocale = (() => { try { return localStorage.getItem('campus-locale'); } catch { return null; } })();
+function readLocalJson(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; }
+}
+const storedAccessibility = readLocalJson('campus-accessibility', {});
+const storedFocus = readLocalJson('campus-focus-timer', {});
 const state = {
   user: null, route: 'feed', profileId: null, search: '', students: [], posts: [], profile: null,
   connections: null, authMode: 'login', loading: false, editingPostId: null, locale: messages[storedLocale] ? storedLocale : 'en',
-  connectionTab: 'following', meta: { session_days: 30, max_users: 500 },
+  connectionTab: 'following', meta: { session_days: 30, max_users: 500 }, events: [], adminSettings: null,
+  adminSetupAvailable: false, translations: {}, accessibility: { largeText: Boolean(storedAccessibility.largeText), highContrast: Boolean(storedAccessibility.highContrast), reduceMotion: Boolean(storedAccessibility.reduceMotion) },
+  focus: { mode: storedFocus.mode === 'break' ? 'break' : 'focus', secondsLeft: Number.isInteger(storedFocus.secondsLeft) ? storedFocus.secondsLeft : 1500, activeUntil: Number.isFinite(storedFocus.activeUntil) ? storedFocus.activeUntil : null },
 };
+if (state.focus.activeUntil) state.focus.secondsLeft = Math.max(0, Math.ceil((state.focus.activeUntil - Date.now()) / 1000));
 state.i18n = messages[state.locale];
 const tr = (key, variables = {}) => String(state.i18n[key] ?? messages.en[key] ?? key).replace(/\{(\w+)\}/g, (_, name) => String(variables[name] ?? ''));
+function saveAccessibility() {
+  try { localStorage.setItem('campus-accessibility', JSON.stringify(state.accessibility)); } catch {}
+}
+function applyAccessibility() {
+  document.documentElement.classList.toggle('a11y-large-text', state.accessibility.largeText);
+  document.documentElement.classList.toggle('a11y-high-contrast', state.accessibility.highContrast);
+  document.documentElement.classList.toggle('a11y-reduced-motion', state.accessibility.reduceMotion);
+}
+function saveFocus() {
+  try { localStorage.setItem('campus-focus-timer', JSON.stringify(state.focus)); } catch {}
+}
+function setFocusMode(mode) {
+  clearInterval(focusInterval);
+  focusInterval = null;
+  state.focus.mode = mode;
+  state.focus.secondsLeft = mode === 'break' ? 5 * 60 : 25 * 60;
+  state.focus.activeUntil = null;
+  saveFocus();
+  render();
+}
+function updateFocusClock() {
+  if (!state.focus.activeUntil) return;
+  state.focus.secondsLeft = Math.max(0, Math.ceil((state.focus.activeUntil - Date.now()) / 1000));
+  if (state.focus.secondsLeft <= 0) {
+    state.focus.activeUntil = null;
+    saveFocus();
+    clearInterval(focusInterval);
+    focusInterval = null;
+    toast(state.focus.mode === 'focus' ? tr('focusFinished') : tr('breakFinished'));
+  } else {
+    saveFocus();
+  }
+  const clock = document.querySelector('[data-focus-clock]');
+  if (clock) clock.textContent = `${String(Math.floor(state.focus.secondsLeft / 60)).padStart(2, '0')}:${String(state.focus.secondsLeft % 60).padStart(2, '0')}`;
+  const toggle = document.querySelector('[data-action="focus-toggle"]');
+  if (toggle) toggle.textContent = state.focus.activeUntil ? tr('pauseTimer') : tr('startTimer');
+}
+let focusInterval = null;
+async function translatePost(button) {
+  const id = Number(button.dataset.id);
+  const post = document.querySelector(`.post-card[data-post="${id}"]`);
+  const source = post?.querySelector('[data-translate-source]')?.value || 'en';
+  const target = state.locale;
+  const item = [...state.posts, ...(state.profile?.posts || [])].find(entry => Number(entry.post_id) === id);
+  if (!item) throw new Error(tr('translationFailed'));
+  if (source === target) throw new Error(tr('translationSameLanguage'));
+  button.disabled = true;
+  button.textContent = tr('translating');
+  try {
+    const result = await api('translate', { method: 'POST', body: JSON.stringify({ post_id: id, source, target }) });
+    state.translations[id] = { target, text: result.translation };
+    render();
+  } finally {
+    if (button.isConnected) { button.disabled = false; button.textContent = tr('translate'); }
+  }
+}
 const esc = (value = '') => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 const initials = name => String(name || '?').trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toLocaleUpperCase(state.locale);
 const date = value => {
@@ -71,6 +156,7 @@ function localizeServerError(message) {
     'Use a password with at least 8 characters.': 'errorPassword', 'That email is already registered.': 'errorDuplicate',
     'Email or password is incorrect.': 'errorCredentials', 'Post must be between 1 and 2000 characters.': 'errorPost',
     'Comment must be between 1 and 500 characters.': 'errorComment', 'Post not found.': 'errorNotFound',
+    'The translation service is unavailable. Please try again later.': 'translationFailed',
     'You can only edit your own posts.': 'errorOwnerEdit', 'You can only delete your own posts.': 'errorOwnerDelete',
     'Something went wrong. Please try again.': 'errorGeneric',
   };
@@ -114,6 +200,9 @@ function brand() {
 function languagePicker(extraClass = '') {
   return `<label class="language-picker ${extraClass}"><span class="sr-only">${esc(tr('language'))}</span><select data-language aria-label="${esc(tr('language'))}">${Object.entries(localeNames).map(([code, label]) => `<option value="${code}"${state.locale === code ? ' selected' : ''}>${label}</option>`).join('')}</select></label>`;
 }
+function accessibilityMenu() {
+  return `<details class="accessibility-tools"><summary aria-label="${esc(tr('accessibility'))}" title="${esc(tr('accessibility'))}">Aa</summary><div class="accessibility-panel"><b>${esc(tr('accessibility'))}</b><label><input type="checkbox" data-a11y-pref="largeText"${state.accessibility.largeText ? ' checked' : ''}>${esc(tr('textSize'))}</label><label><input type="checkbox" data-a11y-pref="highContrast"${state.accessibility.highContrast ? ' checked' : ''}>${esc(tr('highContrast'))}</label><label><input type="checkbox" data-a11y-pref="reduceMotion"${state.accessibility.reduceMotion ? ' checked' : ''}>${esc(tr('reduceMotion'))}</label></div></details>`;
+}
 function navLink(route, icon, label) {
   return `<button class="side-link${state.route === route ? ' active' : ''}" data-route="${route}"${state.route === route ? ' aria-current="page"' : ''}><span class="ico" aria-hidden="true">${icon}</span>${esc(label)}</button>`;
 }
@@ -121,11 +210,12 @@ function shell(content) {
   const label = state.user.full_name.split(' ')[0];
   const profileId = state.user.user_id;
   return `<div class="shell">
-    <header class="topbar"><div class="topbar-inner">${brand()}<div class="top-actions">${languagePicker()}<button class="button ghost small top-profile" data-route="profile" data-id="${profileId}">${esc(tr('profile'))}</button><div class="user-mini">${avatar(state.user.full_name)}<span class="name">${esc(state.user.full_name)}</span></div><button class="icon-button" data-action="logout" title="${esc(tr('logout'))}" aria-label="${esc(tr('logout'))}">↪</button></div></div></header>
-    <div class="layout"><aside class="side-card"><div class="side-group">${navLink('feed', '⌂', tr('home'))}${navLink('discover', '⌕', tr('discover'))}${navLink('saved', '▣', tr('savedNav'))}${navLink('connections', '♡', tr('connections'))}</div><div class="sidebar-label">${esc(tr('campus'))}</div><button class="side-link${state.route === 'profile' && Number(state.profileId) === Number(profileId) ? ' active' : ''}" data-route="profile" data-id="${profileId}"><span class="ico" aria-hidden="true">◉</span>${esc(tr('profile'))}</button><div class="sidebar-label">${esc(tr('account'))}</div><button class="side-link" data-action="logout"><span class="ico" aria-hidden="true">↪</span>${esc(tr('logout'))}</button><div class="sidebar-note"><span class="online-dot"></span>${esc(tr('communityEyebrow'))}</div></aside>
-      <main class="main">${content}</main>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="topbar"><div class="topbar-inner">${brand()}<div class="top-actions">${languagePicker()}${accessibilityMenu()}<button class="button ghost small top-profile" data-route="profile" data-id="${profileId}">${esc(tr('profile'))}</button><div class="user-mini">${avatar(state.user.full_name)}<span class="name">${esc(state.user.full_name)}</span></div><button class="icon-button" data-action="logout" title="${esc(tr('logout'))}" aria-label="${esc(tr('logout'))}">↪</button></div></div></header>
+    <div class="layout"><aside class="side-card"><div class="side-group">${navLink('feed', '⌂', tr('home'))}${navLink('discover', '⌕', tr('discover'))}${navLink('events', '◷', tr('eventsNav'))}${navLink('study', '▦', tr('studyNav'))}${navLink('saved', '▣', tr('savedNav'))}${navLink('connections', '♡', tr('connections'))}</div><div class="sidebar-label">${esc(tr('campus'))}</div><button class="side-link${state.route === 'profile' && Number(state.profileId) === Number(profileId) ? ' active' : ''}" data-route="profile" data-id="${profileId}"><span class="ico" aria-hidden="true">◉</span>${esc(tr('profile'))}</button>${state.user.role === 'admin' || state.adminSetupAvailable ? navLink('admin', '⚙', tr('adminNav')) : ''}<div class="sidebar-label">${esc(tr('account'))}</div><button class="side-link" data-action="logout"><span class="ico" aria-hidden="true">↪</span>${esc(tr('logout'))}</button><div class="sidebar-note"><span class="online-dot"></span>${esc(tr('communityEyebrow'))}</div></aside>
+      <main class="main" id="main-content">${content}</main>
       <aside class="right-column"><section class="welcome"><small>${esc(tr('communityEyebrow'))}</small><h2>${esc(tr('welcome', { name: label }))}</h2><p>${esc(tr('welcomeBody'))}</p></section><section class="panel"><h3>${esc(tr('network'))}</h3><div id="mini-stats"><div class="stat-row"><span>${esc(tr('following'))}</span><strong>—</strong></div><div class="stat-row"><span>${esc(tr('followers'))}</span><strong>—</strong></div></div></section><section class="panel"><h3>${esc(tr('peopleKnow'))}</h3><div id="suggestions"><span class="muted" style="font-size:12px">…</span></div></section><section class="campus-note"><span class="campus-note-mark">✳</span><div><b>${esc(tr('about'))}</b><p>${esc(tr('aboutBody'))}</p></div></section></aside>
-    </div><nav class="mobile-nav" aria-label="${esc(tr('home'))}"><button data-route="feed"${state.route === 'feed' ? ' aria-current="page"' : ''}><span>⌂</span>${esc(tr('home'))}</button><button data-route="discover"${state.route === 'discover' ? ' aria-current="page"' : ''}><span>⌕</span>${esc(tr('discover'))}</button><button data-route="saved"${state.route === 'saved' ? ' aria-current="page"' : ''}><span>▣</span>${esc(tr('savedNav'))}</button><button data-route="connections"${state.route === 'connections' ? ' aria-current="page"' : ''}><span>♡</span>${esc(tr('connections'))}</button><button data-route="profile" data-id="${profileId}"${state.route === 'profile' ? ' aria-current="page"' : ''}><span>◉</span>${esc(tr('profile'))}</button></nav></div>`;
+    </div><nav class="mobile-nav" aria-label="Campus navigation"><button data-route="feed"${state.route === 'feed' ? ' aria-current="page"' : ''}><span>⌂</span>${esc(tr('home'))}</button><button data-route="discover"${state.route === 'discover' ? ' aria-current="page"' : ''}><span>⌕</span>${esc(tr('discover'))}</button><button data-route="events"${state.route === 'events' ? ' aria-current="page"' : ''}><span>◷</span>${esc(tr('eventsNav'))}</button><button data-route="study"${state.route === 'study' ? ' aria-current="page"' : ''}><span>▦</span>${esc(tr('studyNav'))}</button><button data-route="saved"${state.route === 'saved' ? ' aria-current="page"' : ''}><span>▣</span>${esc(tr('savedNav'))}</button><button data-route="connections"${state.route === 'connections' ? ' aria-current="page"' : ''}><span>♡</span>${esc(tr('connections'))}</button><button data-route="profile" data-id="${profileId}"${state.route === 'profile' ? ' aria-current="page"' : ''}><span>◉</span>${esc(tr('profile'))}</button>${state.user.role === 'admin' || state.adminSetupAvailable ? `<button data-route="admin"${state.route === 'admin' ? ' aria-current="page"' : ''}><span>⚙</span>${esc(tr('adminNav'))}</button>` : ''}</nav></div>`;
 }
 
 function postCard(p){
@@ -138,7 +228,9 @@ function postCard(p){
   const commentCount = Number(p.comment_count) || 0;
   const likedLabel = p.liked_by_me ? label('liked') : label('like');
   const savedLabel = p.saved_by_me ? label('saved') : label('save');
-  return `<article class="post-card" data-post="${p.post_id}"><div class="post-head">${avatar(p.full_name)}<div class="post-author-block"><div class="post-author"><a href="#profile/${p.user_id}" data-route="profile" data-id="${p.user_id}">${esc(p.full_name)}</a></div><div class="post-meta">${esc(p.major || state.i18n?.student || 'Student')} · ${date(p.created_at)}${wasEdited ? ` · ${label('edited')}` : ''}</div></div>${owner ? `<div class="post-owner-actions"><button class="icon-button" data-action="edit-post" data-id="${p.post_id}" title="${label('edit')}" aria-label="${label('edit')}">✎</button><button class="icon-button" data-action="delete-post" data-id="${p.post_id}" title="${label('remove')}" aria-label="${label('remove')}">×</button></div>` : ''}</div>${editing ? `<form class="edit-post-form" data-post="${p.post_id}"><textarea name="content" maxlength="2000" required aria-label="${label('edit')}">${esc(p.content)}</textarea><div class="edit-post-controls"><button class="button ghost small" type="button" data-action="cancel-edit-post">${label('cancel')}</button><button class="button small">${label('saveChanges')}</button></div></form>` : `<div class="post-content">${esc(p.content)}</div>`}<div class="post-stats"><span>♡ ${likeCount} ${label('likes')}</span><span>◌ ${commentCount} ${label('comments')}</span></div><div class="post-actions"><button class="action ${p.liked_by_me ? 'on' : ''}" data-action="like" data-id="${p.post_id}" aria-pressed="${Boolean(p.liked_by_me)}">${p.liked_by_me ? '♥' : '♡'} ${likedLabel}</button><button class="action" data-action="focus-comment" data-id="${p.post_id}">◌ ${label('comment')}</button><button class="action save-action ${p.saved_by_me ? 'on' : ''}" data-action="bookmark" data-id="${p.post_id}" aria-pressed="${Boolean(p.saved_by_me)}">${p.saved_by_me ? '▣' : '♧'} ${savedLabel}</button></div>${p.comments.length ? `<div class="comment-list">${p.comments.map(comment => `<div class="comment"><b>${esc(comment.full_name)}</b>${esc(comment.content)}</div>`).join('')}</div>` : ''}<form class="comment-form" data-post="${p.post_id}"><input name="content" maxlength="500" placeholder="${label('commentPlaceholder')}" aria-label="${label('commentPlaceholder')}"><button class="button secondary small">${label('send')}</button></form></article>`;
+  const translated = state.translations?.[p.post_id]?.target === state.locale ? state.translations[p.post_id] : null;
+  const sourceLanguages = [['en', label('sourceEnglish')], ['kk', label('sourceKazakh')], ['ru', label('sourceRussian')]];
+  return `<article class="post-card" data-post="${p.post_id}"><div class="post-head">${avatar(p.full_name)}<div class="post-author-block"><div class="post-author"><a href="#profile/${p.user_id}" data-route="profile" data-id="${p.user_id}">${esc(p.full_name)}</a></div><div class="post-meta">${esc(p.major || state.i18n?.student || 'Student')} · ${date(p.created_at)}${wasEdited ? ` · ${label('edited')}` : ''}</div></div>${owner ? `<div class="post-owner-actions"><button class="icon-button" data-action="edit-post" data-id="${p.post_id}" title="${label('edit')}" aria-label="${label('edit')}">✎</button><button class="icon-button" data-action="delete-post" data-id="${p.post_id}" title="${label('remove')}" aria-label="${label('remove')}">×</button></div>` : ''}</div>${editing ? `<form class="edit-post-form" data-post="${p.post_id}"><textarea name="content" maxlength="2000" required aria-label="${label('edit')}">${esc(p.content)}</textarea><div class="edit-post-controls"><button class="button ghost small" type="button" data-action="cancel-edit-post">${label('cancel')}</button><button class="button small">${label('saveChanges')}</button></div></form>` : `<div class="post-content">${esc(p.content)}</div>`}${translated ? `<section class="translated-post" lang="${esc(translated.target)}"><b>${esc(label('translationLabel'))}</b><p>${esc(translated.text)}</p></section>` : ''}<div class="post-stats"><span>♡ ${likeCount} ${label('likes')}</span><span>◌ ${commentCount} ${label('comments')}</span></div><div class="post-actions"><button class="action ${p.liked_by_me ? 'on' : ''}" data-action="like" data-id="${p.post_id}" aria-pressed="${Boolean(p.liked_by_me)}">${p.liked_by_me ? '♥' : '♡'} ${likedLabel}</button><button class="action" data-action="focus-comment" data-id="${p.post_id}">◌ ${label('comment')}</button><button class="action save-action ${p.saved_by_me ? 'on' : ''}" data-action="bookmark" data-id="${p.post_id}" aria-pressed="${Boolean(p.saved_by_me)}">${p.saved_by_me ? '▣' : '♧'} ${savedLabel}</button><details class="translate-tools"><summary class="action">↗ ${esc(label('translate'))}</summary><div class="translation-panel"><p>${esc(label('translateDisclosure'))}</p><label>${esc(label('translateFrom'))}<select data-translate-source>${sourceLanguages.map(([code, name]) => `<option value="${code}">${esc(name)}</option>`).join('')}</select></label><button class="button small" type="button" data-action="translate-post" data-id="${p.post_id}">${esc(label('translate'))} to ${esc(localeNames[state.locale])}</button></div></details></div>${p.comments.length ? `<div class="comment-list">${p.comments.map(comment => `<div class="comment"><b>${esc(comment.full_name)}</b>${esc(comment.content)}</div>`).join('')}</div>` : ''}<form class="comment-form" data-post="${p.post_id}"><input name="content" maxlength="500" placeholder="${label('commentPlaceholder')}" aria-label="${label('commentPlaceholder')}"><button class="button secondary small">${label('send')}</button></form></article>`;
 }
 function empty(icon, title, message) {
   return `<div class="empty"><div class="empty-icon" aria-hidden="true">${icon}</div><b>${esc(title)}</b><p>${esc(message)}</p></div>`;
@@ -171,15 +263,53 @@ function connectionsPage() {
 function savedPage() {
   return `${heading(tr('savedTitle'), tr('savedSubtitle'))}<section class="feed">${state.posts.length ? state.posts.map(postCard).join('') : empty('▣', tr('noSaved'), tr('noSavedBody'))}</section>`;
 }
+function localDateTime(value = new Date()) {
+  return new Date(value.getTime() - value.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+function eventForm(kind) {
+  const study = kind === 'study';
+  return `<form class="panel event-form" id="event-form"><h2>${esc(tr(study ? 'createStudy' : 'createEvent'))}</h2><input type="hidden" name="kind" value="${kind}"><div class="event-form-grid"><label>${esc(tr('titleLabel'))}<input name="title" maxlength="100" required></label><label>${esc(tr('locationLabel'))}<input name="location" maxlength="160" required placeholder="Library, room, or online"></label><label>${esc(tr('dateTimeLabel'))}<input type="datetime-local" name="starts_at" min="${localDateTime(new Date(Date.now() + 60000))}" value="${localDateTime(new Date(Date.now() + 3600000))}" required></label><label>${esc(tr('capacityLabel'))}<input type="number" name="capacity" min="1" max="500" value="${study ? 6 : 30}" required></label></div><label>${esc(tr('descriptionLabel'))}<textarea name="description" maxlength="500" rows="3" placeholder="${study ? 'What will you work on?' : 'What should students know?'}"></textarea></label><button class="button">${esc(tr(study ? 'publishStudy' : 'publishEvent'))}</button></form>`;
+}
+function eventCard(item) {
+  const dateLocale = state.locale === 'kk' ? 'kk-KZ' : state.locale === 'ru' ? 'ru-RU' : 'en';
+  const start = new Intl.DateTimeFormat(dateLocale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.starts_at));
+  const joined = item.my_status;
+  const buttonLabel = joined ? tr('leaveEvent') : Number(item.attendee_count) >= Number(item.capacity) ? tr('joinWaitlist') : tr(item.kind === 'study' ? 'joinStudy' : 'joinEvent');
+  const participantNames = (item.attendees || []).map(user => esc(user.full_name)).join(', ');
+  return `<article class="event-card panel"><div class="event-card-top"><span class="event-kind">${esc(tr(item.kind === 'study' ? 'studyNav' : 'eventsNav'))}</span><span class="event-capacity">${Number(item.attendee_count)}/${Number(item.capacity)} ${esc(tr('attendees'))}</span></div><h2>${esc(item.title)}</h2><p class="event-description">${esc(item.description || '')}</p><div class="event-details"><span>◷ ${esc(start)}</span><span>⌖ ${esc(item.location)}</span><span>${esc(tr('host'))}: ${esc(item.host_name)}</span>${Number(item.waitlist_count) ? `<span>◌ ${Number(item.waitlist_count)} ${esc(tr('waitingList'))}</span>` : ''}</div>${participantNames ? `<p class="event-participants"><b>${esc(tr('attendees'))}:</b> ${participantNames}${Number(item.attendee_count) > item.attendees.length ? ` +${Number(item.attendee_count) - item.attendees.length}` : ''}</p>` : ''}<div class="event-card-actions">${joined === 'waitlisted' ? `<span class="waitlist-position">${esc(tr('onWaitlist', { position: item.my_waitlist_position }))}</span>` : ''}<button class="button ${joined ? 'secondary' : ''} small" data-action="event-rsvp" data-id="${item.event_id}" data-joined="${joined || ''}">${esc(buttonLabel)}</button>${Number(item.user_id) === Number(state.user.user_id) ? `<button class="button ghost small" data-action="delete-event" data-id="${item.event_id}">Cancel event</button>` : ''}</div></article>`;
+}
+function eventList() {
+  return state.events.length ? `<section class="event-list">${state.events.map(eventCard).join('')}</section>` : empty('◷', tr('noEvents'), tr('noEventsBody'));
+}
+function eventsPage() {
+  return `${heading(tr('eventsTitle'), tr('eventsSubtitle'))}${eventForm('event')}${eventList()}`;
+}
+function focusTimer() {
+  const seconds = Math.max(0, Number(state.focus.secondsLeft) || 0);
+  const title = state.focus.mode === 'break' ? tr('shortBreak') : tr('focusSprint');
+  return `<section class="focus-timer panel"><div class="focus-timer-heading"><div><span class="eyebrow">${esc(tr('focusTitle'))}</span><h2>${esc(title)}</h2></div><span class="focus-mark" aria-hidden="true">◷</span></div><div class="focus-clock" data-focus-clock aria-label="${Math.floor(seconds / 60)} minutes ${seconds % 60} seconds remaining">${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}</div><div class="focus-mode-controls"><button class="button ${state.focus.mode === 'focus' ? '' : 'secondary'} small" data-action="focus-mode" data-mode="focus">${esc(tr('focusSprint'))}</button><button class="button ${state.focus.mode === 'break' ? '' : 'secondary'} small" data-action="focus-mode" data-mode="break">${esc(tr('shortBreak'))}</button></div><div class="focus-actions"><button class="button" data-action="focus-toggle">${esc(state.focus.activeUntil ? tr('pauseTimer') : tr('startTimer'))}</button><button class="button ghost" data-action="focus-reset">${esc(tr('resetTimer'))}</button></div></section>`;
+}
+function studyPage() {
+  return `${heading(tr('studyTitle'), tr('studySubtitle'))}${focusTimer()}${eventForm('study')}${eventList()}`;
+}
+function adminPage() {
+  if (state.user.role !== 'admin') {
+    if (!state.adminSetupAvailable) return `${heading(tr('adminTitle'), tr('adminSubtitle'))}${empty('⚙', 'Administrator setup is unavailable', 'Ask the project owner to enable the one-time administrator setup key.')}`;
+    return `${heading(tr('adminTitle'), tr('adminSubtitle'))}<form class="panel admin-form" id="admin-bootstrap-form"><h2>${esc(tr('bootstrapTitle'))}</h2><p>${esc(tr('bootstrapDescription'))}</p><label>${esc(tr('setupKey'))}<input name="token" type="password" autocomplete="off" required minlength="32"></label><button class="button">${esc(tr('claimAdmin'))}</button></form>`;
+  }
+  if (!state.adminSettings) return `${heading(tr('adminTitle'), tr('adminSubtitle'))}<section class="panel">Loading…</section>`;
+  return `${heading(tr('adminTitle'), tr('adminSubtitle'))}<form class="panel admin-form" id="admin-settings-form"><h2>${esc(tr('accountCapacity'))}</h2><p>${esc(tr('currentStudents', { count: state.adminSettings.registered_users }))}</p><label>${esc(tr('accountCapacity'))}<input type="number" name="max_users" min="${Math.max(1, state.adminSettings.registered_users)}" max="1000000" value="${state.adminSettings.max_users}" required></label><button class="button">${esc(tr('saveCapacity'))}</button></form>`;
+}
 function authPage() {
   const register = state.authMode === 'register';
-  return `<div class="auth-screen"><section class="auth-aside"><div class="auth-top">${brand()}${languagePicker('auth-language')}</div><div class="auth-message"><span class="auth-orbit orbit-one"></span><span class="auth-orbit orbit-two"></span><span class="auth-kicker">✳ &nbsp; ${esc(tr('authKicker'))}</span><h1>${esc(tr('authHeadline')).replace('\n', '<br>')}</h1><p>${esc(tr('authBody'))}</p><div class="auth-bubbles"><span>✳</span><span>↗</span><span>♡</span></div></div><div class="aside-bottom">${esc(tr('authFoot'))}</div></section><section class="auth-main"><form class="auth-card" id="auth-form"><div class="auth-mark">${register ? '✳' : '↗'}</div><h2>${esc(tr(register ? 'joinTitle' : 'loginTitle'))}</h2><p>${esc(tr(register ? 'joinSubtitle' : 'loginSubtitle'))}</p>${register ? `<div class="field"><label for="full_name">${esc(tr('fullName'))}</label><input id="full_name" name="full_name" maxlength="100" required autocomplete="name" placeholder="${esc(tr('yourName'))}"></div><div class="field"><label for="major">${esc(tr('major'))}</label><input id="major" name="major" maxlength="100" required placeholder="${esc(tr('majorExample'))}"></div><div class="field"><label for="faculty">${esc(tr('faculty'))} <span class="muted">(${esc(tr('optional'))})</span></label><input id="faculty" name="faculty" maxlength="100" placeholder="${esc(tr('facultyExample'))}"></div>` : ''}<div class="field"><label for="email">${esc(tr('universityEmail'))}</label><input id="email" name="email" type="email" maxlength="150" required autocomplete="email" placeholder="${esc(tr('emailExample'))}"></div><div class="field"><label for="password">${esc(tr('password'))}</label><input id="password" name="password" type="password" minlength="8" maxlength="200" required autocomplete="${register ? 'new-password' : 'current-password'}" placeholder="${esc(tr('passwordHint'))}"></div><button class="button auth-submit">${esc(tr(register ? 'createAccount' : 'signIn'))}<span aria-hidden="true"> ↗</span></button><div class="account-policy"><span>◷ ${esc(tr('sessionPolicy', { days: state.meta.session_days }))}</span>${register ? `<span>◎ ${esc(tr('accountPolicy', { count: state.meta.max_users }))}</span>` : ''}</div><div class="auth-switch">${esc(tr(register ? 'alreadyAccount' : 'newHere'))} <button class="link-button" type="button" data-action="auth-toggle">${esc(tr(register ? 'loginLink' : 'joinLink'))}</button></div></form></section></div>`;
+  return `<div class="auth-screen"><section class="auth-aside"><div class="auth-top">${brand()}<div class="auth-tools">${languagePicker('auth-language')}${accessibilityMenu()}</div></div><div class="auth-message"><span class="auth-orbit orbit-one"></span><span class="auth-orbit orbit-two"></span><span class="auth-kicker">✳ &nbsp; ${esc(tr('authKicker'))}</span><h1>${esc(tr('authHeadline')).replace('\n', '<br>')}</h1><p>${esc(tr('authBody'))}</p><div class="auth-bubbles"><span>✳</span><span>↗</span><span>♡</span></div></div><div class="aside-bottom">${esc(tr('authFoot'))}</div></section><section class="auth-main"><form class="auth-card" id="auth-form"><div class="auth-mark">${register ? '✳' : '↗'}</div><h2>${esc(tr(register ? 'joinTitle' : 'loginTitle'))}</h2><p>${esc(tr(register ? 'joinSubtitle' : 'loginSubtitle'))}</p>${register ? `<div class="field"><label for="full_name">${esc(tr('fullName'))}</label><input id="full_name" name="full_name" maxlength="100" required autocomplete="name" placeholder="${esc(tr('yourName'))}"></div><div class="field"><label for="major">${esc(tr('major'))}</label><input id="major" name="major" maxlength="100" required placeholder="${esc(tr('majorExample'))}"></div><div class="field"><label for="faculty">${esc(tr('faculty'))} <span class="muted">(${esc(tr('optional'))})</span></label><input id="faculty" name="faculty" maxlength="100" placeholder="${esc(tr('facultyExample'))}"></div>` : ''}<div class="field"><label for="email">${esc(tr('universityEmail'))}</label><input id="email" name="email" type="email" maxlength="150" required autocomplete="email" placeholder="${esc(tr('emailExample'))}"></div><div class="field"><label for="password">${esc(tr('password'))}</label><input id="password" name="password" type="password" minlength="8" maxlength="200" required autocomplete="${register ? 'new-password' : 'current-password'}" placeholder="${esc(tr('passwordHint'))}"></div><button class="button auth-submit">${esc(tr(register ? 'createAccount' : 'signIn'))}<span aria-hidden="true"> ↗</span></button><div class="account-policy"><span>◷ ${esc(tr('sessionPolicy', { days: state.meta.session_days }))}</span>${register ? `<span>◎ ${esc(tr('accountPolicy', { count: state.meta.max_users }))}</span>` : ''}</div><div class="auth-switch">${esc(tr(register ? 'alreadyAccount' : 'newHere'))} <button class="link-button" type="button" data-action="auth-toggle">${esc(tr(register ? 'loginLink' : 'joinLink'))}</button></div></form></section></div>`;
 }
 function render() {
   document.documentElement.lang = state.locale;
   state.i18n = messages[state.locale];
+  applyAccessibility();
   if (!state.user) { app.innerHTML = authPage(); return; }
-  const content = state.route === 'discover' ? discoverPage() : state.route === 'profile' ? profilePage() : state.route === 'connections' ? connectionsPage() : state.route === 'saved' ? savedPage() : feedPage();
+  const content = state.route === 'discover' ? discoverPage() : state.route === 'profile' ? profilePage() : state.route === 'connections' ? connectionsPage() : state.route === 'saved' ? savedPage() : state.route === 'events' ? eventsPage() : state.route === 'study' ? studyPage() : state.route === 'admin' ? adminPage() : feedPage();
   app.innerHTML = shell(content);
   loadSidebar();
 }
@@ -201,6 +331,9 @@ async function loadPage() {
     else if (state.route === 'profile') state.profile = await api('users/' + state.profileId);
     else if (state.route === 'connections') state.connections = await api('connections');
     else if (state.route === 'saved') state.posts = (await api('bookmarks')).posts;
+    else if (state.route === 'events') state.events = (await api('events?kind=event')).events;
+    else if (state.route === 'study') state.events = (await api('events?kind=study')).events;
+    else if (state.route === 'admin' && state.user.role === 'admin') state.adminSettings = await api('admin/settings');
     render();
   } catch (error) {
     toast(error.message, true);
@@ -212,11 +345,20 @@ async function refresh() {
   else if (state.route === 'discover') state.students = (await api('users?q=' + encodeURIComponent(state.search))).users;
   else if (state.route === 'connections') state.connections = await api('connections');
   else if (state.route === 'saved') state.posts = (await api('bookmarks')).posts;
+  else if (state.route === 'events') state.events = (await api('events?kind=event')).events;
+  else if (state.route === 'study') state.events = (await api('events?kind=study')).events;
+  else if (state.route === 'admin' && state.user.role === 'admin') state.adminSettings = await api('admin/settings');
   else state.posts = (await api('feed')).posts;
   render();
 }
 
 app.addEventListener('change', event => {
+  if (event.target.matches('[data-a11y-pref]')) {
+    state.accessibility[event.target.dataset.a11yPref] = event.target.checked;
+    saveAccessibility();
+    applyAccessibility();
+    return;
+  }
   if (!event.target.matches('[data-language]')) return;
   state.locale = messages[event.target.value] ? event.target.value : 'en';
   state.i18n = messages[state.locale];
@@ -241,6 +383,37 @@ app.addEventListener('click', async event => {
     if (action === 'edit-post') { state.editingPostId = Number(button.dataset.id); render(); document.querySelector(`.edit-post-form[data-post="${button.dataset.id}"] textarea`)?.focus(); }
     if (action === 'cancel-edit-post') { state.editingPostId = null; render(); }
     if (action === 'logout') { await api('auth/logout', { method: 'POST' }); state.user = null; state.route = 'feed'; state.authMode = 'login'; render(); }
+    if (action === 'translate-post') await translatePost(button);
+    if (action === 'event-rsvp') {
+      const id = button.dataset.id;
+      if (button.dataset.joined) await api(`events/${id}/rsvp`, { method: 'DELETE' });
+      else await api(`events/${id}/rsvp`, { method: 'POST' });
+      await refresh();
+    }
+    if (action === 'delete-event') {
+      if (confirm('Cancel this event and remove all RSVPs?')) {
+        await api(`events/${button.dataset.id}`, { method: 'DELETE' });
+        await refresh();
+      }
+    }
+    if (action === 'focus-mode') setFocusMode(button.dataset.mode);
+    if (action === 'focus-toggle') {
+      if (state.focus.activeUntil) {
+        state.focus.secondsLeft = Math.max(0, Math.ceil((state.focus.activeUntil - Date.now()) / 1000));
+        state.focus.activeUntil = null;
+        clearInterval(focusInterval); focusInterval = null;
+      } else {
+        if (state.focus.secondsLeft <= 0) state.focus.secondsLeft = state.focus.mode === 'break' ? 300 : 1500;
+        state.focus.activeUntil = Date.now() + state.focus.secondsLeft * 1000;
+        clearInterval(focusInterval); focusInterval = setInterval(updateFocusClock, 1000);
+      }
+      saveFocus(); render();
+    }
+    if (action === 'focus-reset') {
+      clearInterval(focusInterval); focusInterval = null;
+      state.focus.secondsLeft = state.focus.mode === 'break' ? 300 : 1500;
+      state.focus.activeUntil = null; saveFocus(); render();
+    }
     if (action === 'like') { const id = button.dataset.id; await api(`posts/${id}/likes`, { method: button.classList.contains('on') ? 'DELETE' : 'POST' }); await refresh(); }
     if (action === 'bookmark') {
       const id = button.dataset.id;
@@ -262,7 +435,7 @@ app.addEventListener('click', async event => {
 });
 app.addEventListener('submit', async event => {
   const form = event.target;
-  if (!['post-form', 'search-form', 'auth-form'].includes(form.id) && !form.matches('.comment-form, .edit-post-form')) return;
+  if (!['post-form', 'search-form', 'auth-form', 'event-form', 'admin-bootstrap-form', 'admin-settings-form'].includes(form.id) && !form.matches('.comment-form, .edit-post-form')) return;
   event.preventDefault();
   const values = new FormData(form);
   try {
@@ -280,6 +453,21 @@ app.addEventListener('submit', async event => {
       const id = form.dataset.post;
       await api(`posts/${id}`, { method: 'PUT', body: JSON.stringify({ content: values.get('content') }) });
       state.editingPostId = null; await refresh(); toast(tr('postUpdated'));
+    } else if (form.id === 'event-form') {
+      const startsAt = new Date(values.get('starts_at'));
+      await api('events', { method: 'POST', body: JSON.stringify({
+        kind: values.get('kind'), title: values.get('title'), description: values.get('description'),
+        location: values.get('location'), starts_at: startsAt.toISOString(), capacity: Number(values.get('capacity')),
+      }) });
+      await refresh(); toast(tr(values.get('kind') === 'study' ? 'studyCreated' : 'eventCreated'));
+    } else if (form.id === 'admin-bootstrap-form') {
+      const result = await api('admin/bootstrap', { method: 'POST', body: JSON.stringify({ token: values.get('token') }) });
+      state.user = result.user; state.adminSetupAvailable = false; state.adminSettings = null;
+      await refresh();
+    } else if (form.id === 'admin-settings-form') {
+      state.adminSettings = await api('admin/settings', { method: 'PUT', body: JSON.stringify({ max_users: Number(values.get('max_users')) }) });
+      state.meta = await api('meta');
+      render(); toast(tr('capacitySaved'));
     } else {
       const id = form.dataset.post;
       await api(`posts/${id}/comments`, { method: 'POST', body: JSON.stringify({ content: values.get('content') }) });
@@ -291,8 +479,9 @@ app.addEventListener('submit', async event => {
 async function init() {
   const [route, id] = location.hash.slice(1).split('/');
   try {
-    const [session, meta] = await Promise.all([api('auth/me'), api('meta')]);
+    const [session, meta, adminSetup] = await Promise.all([api('auth/me'), api('meta'), api('admin/setup')]);
     state.meta = meta;
+    state.adminSetupAvailable = adminSetup.enabled;
     state.user = session.user;
     if (state.user) {
       if (route) state.route = route;
@@ -300,6 +489,10 @@ async function init() {
       if (state.route === 'discover') state.search = new URLSearchParams(location.search).get('q') || '';
       await loadPage();
     } else render();
+    if (state.focus.activeUntil) {
+      if (state.focus.secondsLeft > 0) focusInterval = setInterval(updateFocusClock, 1000);
+      else { state.focus.activeUntil = null; saveFocus(); }
+    }
   } catch { render(); }
 }
 init();

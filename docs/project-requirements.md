@@ -8,11 +8,12 @@ Campus is a small student community where people can share campus updates, meet 
 
 | Owner | Scope | Review evidence |
 | --- | --- | --- |
-| Nurila | Product requirements, frontend/backend behavior, and design/UX specification | This document and the feature/API checklist below |
-| Miras | Saved posts: persistent bookmarking and the private Saved page | Bookmark API, database relation, and saved-post interface |
-| Ali | Session duration and account-capacity policy | 30-day session cookie; configurable 500-account registration cap |
-| Nazgul | Visual redesign and mobile layout | Updated interface styles, tablet/mobile breakpoints, and five-item mobile navigation |
-| Aikhanym | Kazakh and Russian localization | Language picker, translated interface, localized relative dates and errors |
+| Salamat Nurila | Campus events and seat registration | Event API, unique RSVP relation, queue status, and capacity-aware interface |
+| Ibrayev Miras | Co-working study sessions | Study together page and shared session RSVP flow |
+| Aidaruly Ali | Administrator-managed account capacity | Protected admin settings API and persistent capacity value |
+| Khurshitova Nazgul | Accessibility settings and phone layout | Text size, contrast, reduced motion, keyboard, and responsive navigation |
+| Saken Aikhanym | Post translation and language support | Translation controls and English, Kazakh, and Russian target languages |
+| Almat | Focus timer | Persistent 25-minute focus and 5-minute break controls |
 
 ## Product requirements
 
@@ -25,8 +26,13 @@ Campus is a small student community where people can share campus updates, meet 
 | FR-03 | A student can search for other students, open a profile, follow/unfollow, and view their connections. | Search, profile, follow, and connections routes use the current authenticated API. |
 | FR-04 | A student can save or unsave any visible post and revisit saved posts in a private list. Saved state is unique per student/post and persists between sessions. | `POST`/`DELETE /api/posts/:id/bookmark`; `GET /api/bookmarks`; unique database constraint and user-scoped query. |
 | FR-05 | A successful sign-in remains valid for 30 days by default. | Session row expiry and HttpOnly cookie use the same duration; `SESSION_DAYS` can change it from 1 to 365. |
-| FR-06 | Registration stops at a campus account limit of 500 by default and returns a clear conflict response when full. | `MAX_USERS` configures the limit (1–1,000,000); registration checks the current account count before creation. |
-| FR-07 | Core interface content is available in English, Kazakh, and Russian. The selected language is saved in the browser. | The language picker is available on sign-in and the signed-in header; primary labels, feedback, and relative dates localize. |
+| FR-06 | Registration stops at a campus account limit of 500 by default and returns a clear conflict response when full. An administrator can change the persistent limit. | `MAX_USERS` seeds the initial setting; `PUT /api/admin/settings` changes it after the first administrator is configured. |
+| FR-07 | Core interface content is available in English, Kazakh, and Russian. Students can translate a post into the selected interface language. | The language picker is saved in the browser. Post controls ask for the source language, disclose the translation provider, and keep the original visible. |
+| FR-08 | Students can create campus events with a future start time, place, and seat capacity. Each student can RSVP once. | `POST /api/events`, `POST`/`DELETE /api/events/:id/rsvp`, unique `(event_id, user_id)` in `event_rsvps`, and the Events page. |
+| FR-09 | A full event accepts additional sign-ups in a FIFO waitlist and moves the next student into an open seat when an RSVP is cancelled. | RSVP order is stored by `rsvp_id`; displayed attendance and waitlist positions derive from that order and capacity. |
+| FR-10 | Students can create and join co-working sessions with a topic, location, start time, and seat limit. | Study sessions use the same event and waitlist system under the `study` kind. |
+| FR-11 | Students can choose larger text, higher contrast, and reduced motion. The settings persist in their browser. | Accessibility menu applies saved preferences on sign-in and signed-in screens. |
+| FR-12 | Students can use a 25-minute focus sprint and a 5-minute break timer. | The Study together page stores timer mode and progress locally. |
 
 ### Frontend specification
 
@@ -37,6 +43,8 @@ Campus is a small student community where people can share campus updates, meet 
 - Provide a persistent language selector on both the signed-out and signed-in screens.
 - Support keyboard focus, labelled form controls, visible action states, and status/alert announcements for feedback.
 - Keep student-written content escaped as text; never render post or profile content as HTML.
+- Keep new campus navigation available at phone widths and provide a skip link, visible focus, and keyboard-operable controls.
+- Keep event attendance and waitlist position derived from one unique RSVP row per user and event.
 
 ### Backend and data specification
 
@@ -44,6 +52,10 @@ Campus is a small student community where people can share campus updates, meet 
 - Hash passwords with scrypt; store only a SHA-256 hash of the random session token.
 - Use parameterized SQL and enforce post ownership on the server.
 - Store saved posts in `bookmarks(user_id, post_id, created_at)`. Add a unique `(user_id, post_id)` constraint and foreign keys with cascade deletion.
+- Store events and study sessions in `events`; store sign-ups in `event_rsvps` with a unique event/user pair and queue order. Use the same schema in SQLite and Postgres.
+- Store the adjustable campus account limit in `app_settings`; only accounts with the persisted `admin` role can change it.
+- Require a one-time `ADMIN_BOOTSTRAP_TOKEN` (at least 32 characters) to configure the first administrator. Remove it after bootstrap.
+- Send post text to MyMemory through the authenticated server route only after the student expands Translate and presses the translation button. Keep each provider request below its documented 500-byte segment limit.
 - Return only the signed-in student's saved posts from `/api/bookmarks`; never return another student's bookmark list.
 - Return public configuration through `/api/meta`: `session_days` and `max_users`.
 - Keep SQLite and Postgres schemas aligned.
@@ -62,7 +74,8 @@ Campus is a small student community where people can share campus updates, meet 
 | Setting | Default | Valid range | Purpose |
 | --- | ---: | ---: | --- |
 | `SESSION_DAYS` | 30 days | 1–365 | Session cookie and server-side session expiry |
-| `MAX_USERS` | 500 accounts | 1–1,000,000 | Maximum registered campus accounts |
+| `MAX_USERS` | 500 accounts | 1–1,000,000 | Initial campus registration limit; administrators can change the stored setting |
+| `ADMIN_BOOTSTRAP_TOKEN` | unset | at least 32 characters | One-time credential to configure the first administrator |
 
 Invalid environment values fall back to the defaults. For a local demonstration, the current seeded sample database has five fictional users and is below the default account cap.
 
@@ -74,4 +87,7 @@ Invalid environment values fall back to the defaults. For a local demonstration,
 4. Open Saved posts, refresh, then remove the post from the saved collection.
 5. Resize to a phone layout and use the fixed bottom navigation.
 6. Show the registration form's 30-day session and 500-account policy.
-7. Explain that server-side session expiry and the registration count enforce those limits.
+7. Create an event with one seat, register a second account, and show the waiting-list position and automatic promotion after an RSVP is cancelled.
+8. Open Study together, create a co-working session, start the focus timer, and change the accessibility preferences.
+9. Open Admin settings to show the persistent account limit. Explain the one-time setup key and remove it after the first administrator is set up.
+10. Translate a post and point out the source-language control and provider disclosure.

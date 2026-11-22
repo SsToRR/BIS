@@ -2,6 +2,8 @@
 
 The app is deployed from the `main` branch of `SsToRR/BIS` at [bis-ashy-phi.vercel.app](https://bis-ashy-phi.vercel.app/). It uses the Vercel Node Function adapter and Neon Postgres. Production is publicly accessible; Preview deployments remain protected by Vercel Authentication.
 
+The new event and capacity features add tables through the existing Postgres schema initializer. To enable account-capacity controls, configure `ADMIN_BOOTSTRAP_TOKEN` as a Vercel environment variable, sign in with the intended first admin account, and enter the token in Admin settings. Remove the token after setup. Post translation requests go through the authenticated API to MyMemory; the interface discloses when post text will be sent.
+
 ## Database
 
 The Neon Marketplace resource is on the Free plan in Frankfurt. Its `DATABASE_URL` is connected to the Vercel project for Production and Preview. The function region is set to `fra1` in `vercel.json`. The first database-backed request creates tables and indexes from `database/schema.postgres.sql`. Production starts empty; the SQLite demo users and posts were not migrated.

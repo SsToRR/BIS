@@ -15,6 +15,7 @@ const positiveSetting = (value, fallback, max) => {
 };
 const SESSION_DAYS = positiveSetting(process.env.SESSION_DAYS, 30, 365);
 const MAX_USERS = positiveSetting(process.env.MAX_USERS, 500, 1000000);
+const ADMIN_BOOTSTRAP_TOKEN = process.env.ADMIN_BOOTSTRAP_TOKEN || '';
 const usePostgres = Boolean(DATABASE_URL);
 if (process.env.VERCEL === '1' && !usePostgres) {
   throw new Error('DATABASE_URL must be configured for Vercel deployments.');
@@ -50,9 +51,11 @@ async function ensureSchema() {
         for (const statement of schema.split(';').map((part) => part.trim()).filter(Boolean)) {
           await sql.query(statement, []);
         }
+        await sql.query(toPostgresSql('INSERT OR IGNORE INTO app_settings(setting_key,setting_value) VALUES(?,?)'), ['max_users', String(MAX_USERS)]);
       } else {
         db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
         db.exec(fs.readFileSync(path.join(ROOT, 'database', 'schema.sql'), 'utf8'));
+        db.prepare('INSERT OR IGNORE INTO app_settings(setting_key,setting_value) VALUES(?,?)').run('max_users', String(MAX_USERS));
       }
     })().catch((error) => {
       schemaPromise = null;
@@ -137,6 +140,86 @@ function text(value, field, max, { optional = false } = {}) {
   return result;
 }
 
+async function currentMaxUsers() {
+  const setting = await one('SELECT setting_value FROM app_settings WHERE setting_key=?', 'max_users');
+  return positiveSetting(setting?.setting_value, MAX_USERS, 1000000);
+}
+
+function requireAdmin(user) {
+  if (user.role !== 'admin') fail(403, 'Administrator access is required.');
+}
+
+function secretMatches(candidate, expected) {
+  if (!expected || typeof candidate !== 'string') return false;
+  const candidateHash = crypto.createHash('sha256').update(candidate).digest();
+  const expectedHash = crypto.createHash('sha256').update(expected).digest();
+  return crypto.timingSafeEqual(candidateHash, expectedHash);
+}
+
+function splitTranslationText(value, limit = 450) {
+  const chunks = [];
+  let chunk = '';
+  const parts = String(value).match(/\S+\s*|\s+/gu) || [];
+  for (const part of parts) {
+    if (Buffer.byteLength(chunk + part, 'utf8') <= limit) { chunk += part; continue; }
+    if (chunk) chunks.push(chunk);
+    chunk = '';
+    for (const character of part) {
+      if (Buffer.byteLength(chunk + character, 'utf8') > limit && chunk) { chunks.push(chunk); chunk = ''; }
+      chunk += character;
+    }
+  }
+  if (chunk) chunks.push(chunk);
+  return chunks;
+}
+
+async function translatePostContent(content, source, target) {
+  const translated = [];
+  for (const chunk of splitTranslationText(content)) {
+    const url = new URL('https://api.mymemory.translated.net/get');
+    url.searchParams.set('q', chunk);
+    url.searchParams.set('langpair', `${source}|${target}`);
+    let response;
+    let data;
+    try {
+      response = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(8000) });
+      if (response.ok) data = await response.json();
+    } catch {}
+    if (!response?.ok || Number(data?.responseStatus) !== 200 || typeof data?.responseData?.translatedText !== 'string') {
+      fail(502, 'The translation service is unavailable. Please try again later.');
+    }
+    translated.push(data.responseData.translatedText);
+  }
+  return translated.join('');
+}
+
+async function eventShape(row, viewerId) {
+  const [countRow, mine, attendees] = await Promise.all([
+    one('SELECT COUNT(*) AS count FROM event_rsvps WHERE event_id=?', row.event_id),
+    one('SELECT rsvp_id FROM event_rsvps WHERE event_id=? AND user_id=?', row.event_id, viewerId),
+    q('SELECT u.user_id,u.full_name FROM event_rsvps r JOIN users u ON u.user_id=r.user_id WHERE r.event_id=? ORDER BY r.rsvp_id LIMIT 4', row.event_id),
+  ]);
+  const total = Number(countRow.count);
+  let position = 0;
+  if (mine) {
+    const ahead = await one('SELECT COUNT(*) AS count FROM event_rsvps WHERE event_id=? AND rsvp_id<=?', row.event_id, mine.rsvp_id);
+    position = Number(ahead.count);
+  }
+  const capacity = Number(row.capacity);
+  const myStatus = position ? position <= capacity ? 'attending' : 'waitlisted' : null;
+  return {
+    ...row,
+    event_id: Number(row.event_id),
+    user_id: Number(row.user_id),
+    capacity,
+    attendee_count: Math.min(total, capacity),
+    waitlist_count: Math.max(total - capacity, 0),
+    my_status: myStatus,
+    my_waitlist_position: myStatus === 'waitlisted' ? position - capacity : null,
+    attendees: attendees.filter((_, index) => index < capacity).map((user) => ({ ...user, user_id: Number(user.user_id) })),
+  };
+}
+
 async function postShape(row, viewerId) {
   const [comments, liked, saved] = await Promise.all([
     q('SELECT c.comment_id,c.content,c.created_at,u.user_id,u.full_name,u.major FROM comments c JOIN users u USING(user_id) WHERE c.post_id=? ORDER BY c.created_at', row.post_id),
@@ -172,7 +255,12 @@ async function api(req, res, url) {
   }
 
   if (method === 'GET' && route === 'meta') {
-    return json(res, 200, { session_days: SESSION_DAYS, max_users: MAX_USERS });
+    return json(res, 200, { session_days: SESSION_DAYS, max_users: await currentMaxUsers() });
+  }
+
+  if (method === 'GET' && route === 'admin/setup') {
+    const existingAdmin = await one("SELECT user_id FROM users WHERE role='admin' LIMIT 1");
+    return json(res, 200, { enabled: ADMIN_BOOTSTRAP_TOKEN.length >= 32 && !existingAdmin });
   }
 
   if (method === 'POST' && route === 'auth/register') {
@@ -185,7 +273,8 @@ async function api(req, res, url) {
     if (password.length < 8) fail(400, 'Use a password with at least 8 characters.');
     if (await one('SELECT user_id FROM users WHERE email=?', email)) fail(409, 'That email is already registered.');
     const accountCount = await one('SELECT COUNT(*) AS count FROM users');
-    if (Number(accountCount.count) >= MAX_USERS) fail(409, `This campus has reached its ${MAX_USERS}-student account limit.`);
+    const maxUsers = await currentMaxUsers();
+    if (Number(accountCount.count) >= maxUsers) fail(409, `This campus has reached its ${maxUsers}-student account limit.`);
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = crypto.scryptSync(password, salt, 64).toString('hex');
     const inserted = await one('INSERT INTO users(full_name,email,password_hash,major,faculty,bio,role,created_at) VALUES(?,?,?,?,?,?,?,?) RETURNING user_id', name, email, `${salt}:${hash}`, major, text(b.faculty, 'Faculty', 100, { optional: true }), '', 'student', new Date().toISOString());
@@ -217,6 +306,95 @@ async function api(req, res, url) {
   }
 
   const me = await requireUser(req);
+  if (method === 'POST' && route === 'admin/bootstrap') {
+    const b = await body(req);
+    if (!ADMIN_BOOTSTRAP_TOKEN || ADMIN_BOOTSTRAP_TOKEN.length < 32) fail(503, 'Administrator bootstrap is not enabled.');
+    if (!secretMatches(b.token, ADMIN_BOOTSTRAP_TOKEN)) fail(403, 'The administrator setup key is incorrect.');
+    if (await one("SELECT user_id FROM users WHERE role='admin' LIMIT 1")) fail(409, 'An administrator is already configured.');
+    await run("UPDATE users SET role='admin' WHERE user_id=?", me.user_id);
+    return json(res, 200, { user: safeUser(await one('SELECT * FROM users WHERE user_id=?', me.user_id)) });
+  }
+
+  if (method === 'POST' && route === 'translate') {
+    const b = await body(req);
+    const postId = Number(b.post_id);
+    if (!Number.isInteger(postId) || postId < 1) fail(400, 'Choose a valid post.');
+    const post = await one('SELECT content FROM posts WHERE post_id=?', postId);
+    if (!post) fail(404, 'Post not found.');
+    const languages = ['en', 'kk', 'ru'];
+    if (!languages.includes(b.source) || !languages.includes(b.target)) fail(400, 'Choose English, Kazakh, or Russian for translation.');
+    if (b.source === b.target) fail(400, 'Choose a post language different from your interface language.');
+    return json(res, 200, { translation: await translatePostContent(post.content, b.source, b.target) });
+  }
+
+  if (route === 'admin/settings' && method === 'GET') {
+    requireAdmin(me);
+    const [maxUsers, registered] = await Promise.all([
+      currentMaxUsers(),
+      one('SELECT COUNT(*) AS count FROM users'),
+    ]);
+    return json(res, 200, { max_users: maxUsers, registered_users: Number(registered.count) });
+  }
+
+  if (route === 'admin/settings' && method === 'PUT') {
+    requireAdmin(me);
+    const b = await body(req);
+    const maxUsers = Number(b.max_users);
+    if (!Number.isInteger(maxUsers) || maxUsers < 1 || maxUsers > 1000000) fail(400, 'Capacity must be a whole number from 1 to 1,000,000.');
+    const registered = await one('SELECT COUNT(*) AS count FROM users');
+    if (maxUsers < Number(registered.count)) fail(400, 'Capacity cannot be lower than the current number of student accounts.');
+    await run('INSERT INTO app_settings(setting_key,setting_value) VALUES(?,?) ON CONFLICT(setting_key) DO UPDATE SET setting_value=excluded.setting_value', 'max_users', String(maxUsers));
+    return json(res, 200, { max_users: maxUsers, registered_users: Number(registered.count) });
+  }
+
+  if (method === 'GET' && route === 'events') {
+    const kind = url.searchParams.get('kind') || 'event';
+    if (!['event', 'study'].includes(kind)) fail(400, 'Choose events or study sessions.');
+    const rows = await q(`SELECT e.*,u.full_name AS host_name
+      FROM events e JOIN users u ON u.user_id=e.user_id
+      WHERE e.kind=? AND e.starts_at>=? ORDER BY e.starts_at LIMIT 60`, kind, new Date().toISOString());
+    return json(res, 200, { events: await Promise.all(rows.map((row) => eventShape(row, me.user_id))) });
+  }
+
+  if (method === 'POST' && route === 'events') {
+    const b = await body(req);
+    const kind = b.kind === 'study' ? 'study' : b.kind === 'event' ? 'event' : null;
+    if (!kind) fail(400, 'Choose an event or study session.');
+    const title = text(b.title, 'Title', 100);
+    const description = text(b.description, 'Description', 500, { optional: true });
+    const location = text(b.location, 'Location', 160);
+    const startDate = new Date(b.starts_at);
+    if (!b.starts_at || Number.isNaN(startDate.getTime()) || startDate.getTime() <= Date.now()) fail(400, 'Choose a future date and time.');
+    const capacity = Number(b.capacity);
+    if (!Number.isInteger(capacity) || capacity < 1 || capacity > 500) fail(400, 'Capacity must be a whole number from 1 to 500.');
+    const createdAt = new Date().toISOString();
+    const inserted = await one('INSERT INTO events(user_id,kind,title,description,location,starts_at,capacity,created_at) VALUES(?,?,?,?,?,?,?,?) RETURNING event_id', me.user_id, kind, title, description, location, startDate.toISOString(), capacity, createdAt);
+    return json(res, 201, { event_id: Number(inserted.event_id) });
+  }
+
+  if (/^events\/\d+\/rsvp$/.test(route) && method === 'POST') {
+    const id = Number(parts[1]);
+    const event = await one('SELECT event_id,starts_at FROM events WHERE event_id=?', id);
+    if (!event) fail(404, 'Event not found.');
+    if (Date.parse(event.starts_at) <= Date.now()) fail(409, 'This session has already started.');
+    await run('INSERT OR IGNORE INTO event_rsvps(event_id,user_id,created_at) VALUES(?,?,?)', id, me.user_id, new Date().toISOString());
+    return json(res, 200, { event: await eventShape(await one('SELECT e.*,u.full_name AS host_name FROM events e JOIN users u ON u.user_id=e.user_id WHERE e.event_id=?', id), me.user_id) });
+  }
+
+  if (/^events\/\d+\/rsvp$/.test(route) && method === 'DELETE') {
+    const id = Number(parts[1]);
+    await run('DELETE FROM event_rsvps WHERE event_id=? AND user_id=?', id, me.user_id);
+    return json(res, 200, { ok: true });
+  }
+
+  if (/^events\/\d+$/.test(route) && method === 'DELETE') {
+    const id = Number(parts[1]);
+    const event = await one('SELECT user_id FROM events WHERE event_id=?', id);
+    if (!event) fail(404, 'Event not found.');
+    if (Number(event.user_id) !== Number(me.user_id)) fail(403, 'Only the event host can cancel it.');
+    await run('DELETE FROM events WHERE event_id=?', id);
+    return json(res, 200, { ok: true });
+  }
   if (method === 'GET' && route === 'users') {
     const search = `%${String(url.searchParams.get('q') || '').trim().slice(0, 100)}%`;
     const users = await q(`SELECT u.user_id,u.full_name,u.major,u.faculty,u.bio,
