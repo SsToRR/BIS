@@ -11,4 +11,4 @@ Start the local app with `node server.js`, open `http://127.0.0.1:3000`, and use
 7. **3:35–4:15 — Existing social features.** Save a post, open Saved posts, then find and follow a student.
 8. **4:15–5:00 — Implementation.** Show `events` and `event_rsvps` in the schemas, settings and event APIs in `server.js`, and the six ownership sections in `docs/team-responsibilities.md`.
 
-The first-admin setup needs `ADMIN_BOOTSTRAP_TOKEN` configured before the walkthrough. Remove it after the first admin account is enabled. The six speaking parts are in `docs/team-speaking-script.md`.
+Every registered account has administrator access, so no setup token is needed for the walkthrough. The six speaking parts are in `docs/team-speaking-script.md`.

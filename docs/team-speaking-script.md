@@ -10,9 +10,9 @@ Use the parts in this order. Each section describes the feature assigned to that
 
 “I added a Study together page for small co-working sessions. A student can post a topic, place, time, and number of seats, then classmates can join the session. The page shows who is attending and how many places remain. The same unique registration and waiting-list behavior keeps each study group within its seat limit.”
 
-## Aidaruly Ali — Administrator-managed capacity
+## Aidaruly Ali — Capacity settings for all users
 
-“I made the campus account limit adjustable by an administrator. The first administrator is enabled with a one-time setup key, and then the administrator can change the maximum from the app. The limit is stored in the database and registration checks the saved value, so the policy continues to apply after a restart.”
+“I made the campus account limit adjustable from the app. Every user can open Admin settings and change the maximum. Existing accounts receive administrator access when the server starts, and new accounts have it from registration. The limit is stored in the database, so it continues to apply after a restart.”
 
 ## Khurshitova Nazgul — Accessibility and phone layout
 

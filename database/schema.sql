@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
   major TEXT NOT NULL CHECK(length(major) BETWEEN 1 AND 100),
   faculty TEXT NOT NULL DEFAULT '',
   bio TEXT NOT NULL DEFAULT '',
-  role TEXT NOT NULL DEFAULT 'student' CHECK(role IN ('student','admin')),
+  role TEXT NOT NULL DEFAULT 'admin' CHECK(role IN ('student','admin')),
   created_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS posts (

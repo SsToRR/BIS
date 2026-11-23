@@ -2,7 +2,7 @@
 
 The app is deployed from the `main` branch of `SsToRR/BIS` at [bis-ashy-phi.vercel.app](https://bis-ashy-phi.vercel.app/). It uses the Vercel Node Function adapter and Neon Postgres. Production is publicly accessible; Preview deployments remain protected by Vercel Authentication.
 
-The new event and capacity features add tables through the existing Postgres schema initializer. To enable account-capacity controls, configure `ADMIN_BOOTSTRAP_TOKEN` as a Vercel environment variable, sign in with the intended first admin account, and enter the token in Admin settings. Remove the token after setup. Post translation requests go through the authenticated API to MyMemory; the interface discloses when post text will be sent.
+The event and capacity features add tables through the existing Postgres schema initializer. Every signed-in account can open Admin settings and change the campus account cap. Existing accounts are promoted during schema initialization, and newly registered accounts receive the admin role. Post translation requests go through the authenticated API to MyMemory; the interface discloses when post text will be sent.
 
 ## Database
 

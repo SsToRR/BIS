@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | Campus events, unique attendance, and FIFO waitlists | Implemented | `events` and `event_rsvps` in both schemas; event APIs and event page in `server.js` and `app.js` |
 | Co-working sessions | Implemented | Study together page with topic, place, start time, capacity, attendees, and queue |
-| Adaptive admin-managed account capacity | Implemented | Persistent `app_settings` value, restricted admin routes, and Admin settings page |
+| Account capacity settings for all users | Implemented | Persistent `app_settings` value; existing accounts are promoted during schema initialization, and new accounts are admins by default |
 | Accessibility settings and mobile navigation | Implemented | Larger text, contrast, reduced motion, skip link, keyboard focus, responsive navigation |
 | Translate posts into the selected UI language | Implemented | Authenticated translation route proxies to MyMemory and discloses the provider before sending text |
 | Focus and break timer | Implemented | Browser-saved 25-minute and 5-minute timer controls on the Study together page |

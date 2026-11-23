@@ -15,7 +15,6 @@ const positiveSetting = (value, fallback, max) => {
 };
 const SESSION_DAYS = positiveSetting(process.env.SESSION_DAYS, 30, 365);
 const MAX_USERS = positiveSetting(process.env.MAX_USERS, 500, 1000000);
-const ADMIN_BOOTSTRAP_TOKEN = process.env.ADMIN_BOOTSTRAP_TOKEN || '';
 const usePostgres = Boolean(DATABASE_URL);
 if (process.env.VERCEL === '1' && !usePostgres) {
   throw new Error('DATABASE_URL must be configured for Vercel deployments.');
@@ -51,10 +50,12 @@ async function ensureSchema() {
         for (const statement of schema.split(';').map((part) => part.trim()).filter(Boolean)) {
           await sql.query(statement, []);
         }
+        await sql.query('UPDATE users SET role=\'admin\' WHERE role<>\'admin\'', []);
         await sql.query(toPostgresSql('INSERT OR IGNORE INTO app_settings(setting_key,setting_value) VALUES(?,?)'), ['max_users', String(MAX_USERS)]);
       } else {
         db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
         db.exec(fs.readFileSync(path.join(ROOT, 'database', 'schema.sql'), 'utf8'));
+        db.prepare("UPDATE users SET role='admin' WHERE role<>'admin'").run();
         db.prepare('INSERT OR IGNORE INTO app_settings(setting_key,setting_value) VALUES(?,?)').run('max_users', String(MAX_USERS));
       }
     })().catch((error) => {
@@ -147,13 +148,6 @@ async function currentMaxUsers() {
 
 function requireAdmin(user) {
   if (user.role !== 'admin') fail(403, 'Administrator access is required.');
-}
-
-function secretMatches(candidate, expected) {
-  if (!expected || typeof candidate !== 'string') return false;
-  const candidateHash = crypto.createHash('sha256').update(candidate).digest();
-  const expectedHash = crypto.createHash('sha256').update(expected).digest();
-  return crypto.timingSafeEqual(candidateHash, expectedHash);
 }
 
 function splitTranslationText(value, limit = 450) {
@@ -269,11 +263,6 @@ async function api(req, res, url) {
     return json(res, 200, { session_days: SESSION_DAYS, max_users: await currentMaxUsers() });
   }
 
-  if (method === 'GET' && route === 'admin/setup') {
-    const existingAdmin = await one("SELECT user_id FROM users WHERE role='admin' LIMIT 1");
-    return json(res, 200, { enabled: ADMIN_BOOTSTRAP_TOKEN.length >= 32 && !existingAdmin });
-  }
-
   if (method === 'POST' && route === 'auth/register') {
     const b = await body(req);
     const name = text(b.full_name, 'Name', 100);
@@ -288,7 +277,7 @@ async function api(req, res, url) {
     if (Number(accountCount.count) >= maxUsers) fail(409, `This campus has reached its ${maxUsers}-student account limit.`);
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = crypto.scryptSync(password, salt, 64).toString('hex');
-    const inserted = await one('INSERT INTO users(full_name,email,password_hash,major,faculty,bio,role,created_at) VALUES(?,?,?,?,?,?,?,?) RETURNING user_id', name, email, `${salt}:${hash}`, major, text(b.faculty, 'Faculty', 100, { optional: true }), '', 'student', new Date().toISOString());
+    const inserted = await one('INSERT INTO users(full_name,email,password_hash,major,faculty,bio,role,created_at) VALUES(?,?,?,?,?,?,?,?) RETURNING user_id', name, email, `${salt}:${hash}`, major, text(b.faculty, 'Faculty', 100, { optional: true }), '', 'admin', new Date().toISOString());
     const userId = Number(inserted.user_id);
     await createSession(userId, res);
     return json(res, 201, { user: safeUser(await one('SELECT * FROM users WHERE user_id=?', userId)) });
@@ -317,15 +306,6 @@ async function api(req, res, url) {
   }
 
   const me = await requireUser(req);
-  if (method === 'POST' && route === 'admin/bootstrap') {
-    const b = await body(req);
-    if (!ADMIN_BOOTSTRAP_TOKEN || ADMIN_BOOTSTRAP_TOKEN.length < 32) fail(503, 'Administrator bootstrap is not enabled.');
-    if (!secretMatches(b.token, ADMIN_BOOTSTRAP_TOKEN)) fail(403, 'The administrator setup key is incorrect.');
-    if (await one("SELECT user_id FROM users WHERE role='admin' LIMIT 1")) fail(409, 'An administrator is already configured.');
-    await run("UPDATE users SET role='admin' WHERE user_id=?", me.user_id);
-    return json(res, 200, { user: safeUser(await one('SELECT * FROM users WHERE user_id=?', me.user_id)) });
-  }
-
   if (method === 'POST' && route === 'translate') {
     const b = await body(req);
     const postId = Number(b.post_id);

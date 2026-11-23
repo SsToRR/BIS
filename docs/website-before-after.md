@@ -8,7 +8,7 @@ The “before” column describes the interface in the project before this updat
 | Navigation | Feed, student search, connections, and profile. | Adds Events and Study together, plus Saved posts on desktop and phone. |
 | Post actions | Like, comment, and edit/delete controls for the author. | Keeps existing actions and adds a private, persistent Save/Remove control. |
 | Saved content | No bookmark storage or saved-post list. | Saved posts are stored per student and appear on a dedicated page. |
-| Account policy | Seven-day session; no campus account cap. | Thirty-day session and a 500-account starting cap; an administrator can change the saved registration limit. |
+| Account policy | Seven-day session; no campus account cap. | Thirty-day session and a 500-account starting cap; every signed-in user can change the saved registration limit. |
 | Languages | English-only interface. | English, Kazakh, and Russian interface, with a per-post translation action into the selected language. |
 | Campus events | No event list or RSVP queue. | Students create events and study sessions with unique RSVPs, seat limits, and waiting-list promotion. |
 | Accessibility | No per-user display preferences. | Larger text, high contrast, reduced motion, keyboard skip link, and visible focus settings. |

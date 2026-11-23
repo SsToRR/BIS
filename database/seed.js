@@ -5,6 +5,7 @@ const dbFile = process.env.DB_FILE || path.join(__dirname, 'student-network.sqli
 const db = new DatabaseSync(dbFile);
 db.exec('PRAGMA foreign_keys = ON;');
 db.exec(require('node:fs').readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));
+db.prepare("UPDATE users SET role='admin' WHERE role<>'admin'").run();
 const run = (sql,...args)=>db.prepare(sql).run(...args);
 const one = (sql,...args)=>db.prepare(sql).get(...args);
 const now = new Date().toISOString();
@@ -20,7 +21,7 @@ for (const [full_name,email,major,faculty,bio] of accounts) {
   if (one('SELECT user_id FROM users WHERE email=?',email)) continue;
   const salt=crypto.randomBytes(16).toString('hex');
   const hash=crypto.scryptSync(demoPassword,salt,64).toString('hex');
-  run('INSERT INTO users(full_name,email,password_hash,major,faculty,bio,role,created_at) VALUES(?,?,?,?,?,?,?,?)',full_name,email,`${salt}:${hash}`,major,faculty,bio,'student',now);
+  run('INSERT INTO users(full_name,email,password_hash,major,faculty,bio,role,created_at) VALUES(?,?,?,?,?,?,?,?)',full_name,email,`${salt}:${hash}`,major,faculty,bio,'admin',now);
 }
 if (one('SELECT COUNT(*) AS n FROM posts').n===0) {
   const users=Object.fromEntries(accounts.map(([,email])=>[email,one('SELECT user_id FROM users WHERE email=?',email).user_id]));

@@ -11,8 +11,8 @@ A campus community app for student profiles, a post feed, comments, likes, stude
    node server.js
    ```
 
-3. Open `http://127.0.0.1:3000` in a browser. The database is created at `database/student-network.sqlite` the first time the server starts. Set `PORT` or `DB_FILE` to change those defaults. Account policy starts with `SESSION_DAYS` (default 30, range 1–365) and `MAX_USERS` (default 500, range 1–1,000,000). Once the first administrator is set up, the account cap can be changed in Admin settings.
-4. To set up the first administrator, configure a one-time `ADMIN_BOOTSTRAP_TOKEN` with at least 32 characters in the server environment. Register and sign in with the account that should be the administrator, open **Admin settings**, and enter that key. Remove the environment variable after setup. On Vercel, use the project environment settings and redeploy after adding or removing the key.
+3. Open `http://127.0.0.1:3000` in a browser. The database is created at `database/student-network.sqlite` the first time the server starts. Set `PORT` or `DB_FILE` to change those defaults. Account policy starts with `SESSION_DAYS` (default 30, range 1–365) and `MAX_USERS` (default 500, range 1–1,000,000). Every registered account can open Admin settings and change the account cap.
+4. Every account has administrator access. Existing accounts are promoted when the server starts, and new accounts receive administrator access when they register. On Vercel, the role update runs when the database schema initializes.
 5. To populate a fresh or existing database with fictional sample records, run:
 
    ```sh
@@ -29,7 +29,7 @@ Stop the server with Ctrl+C. The SQLite file stays on disk across restarts. To r
 
 - Student registration and login with scrypt password hashes and a 30-day, HttpOnly session cookie by default.
 - A configurable campus account cap (500 by default); registration receives a clear capacity error when full.
-- Admin-managed campus account capacity, with a one-time secret bootstrap for the first administrator.
+- Campus account capacity settings available to every signed-in user.
 - Student-created campus events and co-working sessions with unique RSVPs, capacity counts, and a FIFO waitlist that promotes the next student when a place opens.
 - A personal 25-minute focus timer and 5-minute break timer on the Study together page.
 - Per-post translation into a chosen language (defaults to the interface language). Translation controls disclose that post text is sent to MyMemory when requested.
@@ -52,7 +52,7 @@ The schema lives in `database/schema.sql`. It contains users, posts, comments, l
 
 The planning files propose React → Express → PostgreSQL. This implementation uses a browser-native HTML/CSS/JavaScript frontend and a small Node.js HTTP API. Local runs use SQLite. Vercel runs use the Neon Postgres adapter selected by `DATABASE_URL`; `database/schema.postgres.sql` mirrors the local schema and is initialized on the first API request. Vercel serves the static frontend and routes `/api/*` to `api/[...path].js`.
 
-The app has no notifications, messaging, admin moderation, profile editing, password reset, or account deletion UI. The demo data is optional. The session database stores hashed random tokens, not session tokens in plaintext. The app is deployed on Vercel with Neon Postgres; production starts with an empty database, so register a new account there. The local SQLite demo accounts are not copied to Neon. See `docs/vercel-readiness.md` for deployment details and remaining live checks.
+The app has no notifications, messaging, admin moderation, profile editing, password reset, or account deletion UI. Every signed-in user can change the campus account cap in Admin settings. The demo data is optional. The session database stores hashed random tokens, not session tokens in plaintext. The app is deployed on Vercel with Neon Postgres; production starts with an empty database, so register a new account there. The local SQLite demo accounts are not copied to Neon. See `docs/vercel-readiness.md` for deployment details and remaining live checks.
 
 ## Project files
 

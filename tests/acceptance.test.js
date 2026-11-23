@@ -161,11 +161,11 @@ after(async () => {
   if (tempDir) fs.rmSync(tempDir, { recursive: true, force: true });
 });
 
-test('AC-01 registration creates a student account', async () => {
+test('AC-01 registration creates an admin account', async () => {
   const response = await request('auth/register', { method: 'POST', token: null, body: { full_name: 'Avery Student', email: 'avery@example.test', major: 'Design', password: passphrase } });
   const data = await response.json();
   assert.equal(response.status, 201);
-  assert.equal(data.user.role, 'student');
+  assert.equal(data.user.role, 'admin');
   assert.ok(one('SELECT user_id FROM users WHERE email=?', 'avery@example.test'));
 });
 
