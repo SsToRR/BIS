@@ -32,7 +32,7 @@ Stop the server with Ctrl+C. The SQLite file stays on disk across restarts. To r
 - Admin-managed campus account capacity, with a one-time secret bootstrap for the first administrator.
 - Student-created campus events and co-working sessions with unique RSVPs, capacity counts, and a FIFO waitlist that promotes the next student when a place opens.
 - A personal 25-minute focus timer and 5-minute break timer on the Study together page.
-- Per-post translation into the selected interface language. Translation controls disclose that post text is sent to MyMemory when requested.
+- Per-post translation into a chosen language (defaults to the interface language). Translation controls disclose that post text is sent to MyMemory when requested.
 - Accessibility preferences for larger text, higher contrast, and reduced motion, saved in the browser.
 - Student profiles, post creation, and owner-only post editing and deletion.
 - Feed of the signed-in student's posts and posts from students they follow.

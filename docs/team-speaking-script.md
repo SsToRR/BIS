@@ -20,7 +20,7 @@ Use the parts in this order. Each section describes the feature assigned to that
 
 ## Saken Aikhanym — Translate posts
 
-“I added a translate control to each post. A student chooses the language the post is written in, and the app translates it into the current interface language, which can be English, Kazakh, or Russian. The original post remains visible. Before translating, the control explains that the post text is sent to MyMemory through our server.”
+“I added a translate control to each post. A student chooses the language the post is written in and the language they want it translated into. English, Kazakh, and Russian are available, and the target starts with the app's language. The original post stays visible. Before translating, the control explains that the post text is sent to MyMemory through our server.”
 
 ## Almat — Focus timer
 

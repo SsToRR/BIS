@@ -12,7 +12,7 @@ Campus is a small student community where people can share campus updates, meet 
 | Ibrayev Miras | Co-working study sessions | Study together page and shared session RSVP flow |
 | Aidaruly Ali | Administrator-managed account capacity | Protected admin settings API and persistent capacity value |
 | Khurshitova Nazgul | Accessibility settings and phone layout | Text size, contrast, reduced motion, keyboard, and responsive navigation |
-| Saken Aikhanym | Post translation and language support | Translation controls and English, Kazakh, and Russian target languages |
+| Saken Aikhanym | Post translation and language support | English, Kazakh, and Russian source and target selectors; target defaults to the interface language |
 | Almat | Focus timer | Persistent 25-minute focus and 5-minute break controls |
 
 ## Product requirements
@@ -27,7 +27,7 @@ Campus is a small student community where people can share campus updates, meet 
 | FR-04 | A student can save or unsave any visible post and revisit saved posts in a private list. Saved state is unique per student/post and persists between sessions. | `POST`/`DELETE /api/posts/:id/bookmark`; `GET /api/bookmarks`; unique database constraint and user-scoped query. |
 | FR-05 | A successful sign-in remains valid for 30 days by default. | Session row expiry and HttpOnly cookie use the same duration; `SESSION_DAYS` can change it from 1 to 365. |
 | FR-06 | Registration stops at a campus account limit of 500 by default and returns a clear conflict response when full. An administrator can change the persistent limit. | `MAX_USERS` seeds the initial setting; `PUT /api/admin/settings` changes it after the first administrator is configured. |
-| FR-07 | Core interface content is available in English, Kazakh, and Russian. Students can translate a post into the selected interface language. | Translation requires an explicit source language, shows the target language and external-service disclosure, keeps the original visible, provides inline progress/errors, and caches the result for the current tab. |
+| FR-07 | Core interface content is available in English, Kazakh, and Russian. Students can choose a post's source and target language from those options; the target defaults to the interface language. | Translation requires an explicit source language, lets students choose the target, shows the target and external-service disclosure, keeps the original visible, provides inline progress/errors, and caches the result for the current tab. |
 | FR-08 | Students can create campus events with a future start time, place, and seat capacity. Each student can RSVP once. | `POST /api/events`, `POST`/`DELETE /api/events/:id/rsvp`, unique `(event_id, user_id)` in `event_rsvps`, and the Events page. |
 | FR-09 | A full event accepts additional sign-ups in a FIFO waitlist and moves the next student into an open seat when an RSVP is cancelled. | RSVP order is stored by `rsvp_id`; displayed attendance and waitlist positions derive from that order and capacity. |
 | FR-10 | Students can create and join co-working sessions with a topic, location, start time, and seat limit. | Study sessions use the same event and waitlist system under the `study` kind. |
@@ -55,7 +55,7 @@ Campus is a small student community where people can share campus updates, meet 
 - Store events and study sessions in `events`; store sign-ups in `event_rsvps` with a unique event/user pair and queue order. Use the same schema in SQLite and Postgres.
 - Store the adjustable campus account limit in `app_settings`; only accounts with the persisted `admin` role can change it.
 - Require a one-time `ADMIN_BOOTSTRAP_TOKEN` (at least 32 characters) to configure the first administrator. Remove it after bootstrap.
-- Send post text and language pair to MyMemory through the authenticated server route only after the student chooses a source language and presses Translate. Disclose the external service, keep each request below the documented segment limit, and send one paragraph at a time.
+- Send post text and language pair to MyMemory through the authenticated server route only after the student chooses source and target languages and presses Translate. The target selector defaults to the current interface language. Disclose the external service, keep each request below the documented segment limit, and send one paragraph at a time.
 - Return only the signed-in student's saved posts from `/api/bookmarks`; never return another student's bookmark list.
 - Return public configuration through `/api/meta`: `session_days` and `max_users`.
 - Keep SQLite and Postgres schemas aligned.
@@ -90,4 +90,4 @@ Invalid environment values fall back to the defaults. For a local demonstration,
 7. Create an event with one seat, register a second account, and show the waiting-list position and automatic promotion after an RSVP is cancelled.
 8. Open Study together, create a co-working session, start the focus timer, and change the accessibility preferences.
 9. Open Admin settings to show the persistent account limit. Explain the one-time setup key and remove it after the first administrator is set up.
-10. Translate a post and point out the source-language control and provider disclosure.
+10. Translate a post, choose source and target languages, and point out the provider disclosure.
