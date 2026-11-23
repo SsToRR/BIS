@@ -1,5 +1,6 @@
 const app = document.querySelector('#app');
 const localeNames = { en: 'English', kk: 'Қазақша', ru: 'Русский' };
+const supportedLanguages = ['en', 'kk', 'ru'];
 const messages = {
   en: {
     brandSub: 'student community', student: 'Student', language: 'Language', home: 'Home feed', discover: 'Find students', follow: 'Follow', savedNav: 'Saved posts', connections: 'Connections', profile: 'My profile', logout: 'Log out', campus: 'YOUR CAMPUS', account: 'ACCOUNT', authKicker: 'CAMPUS COMMUNITY',
@@ -17,7 +18,7 @@ const messages = {
     eventsNav: 'Events', eventsTitle: 'Campus events', eventsSubtitle: 'Find a campus activity and save your place.', studyNav: 'Study together', studyTitle: 'Study together', studySubtitle: 'Set up a quiet co-working session and invite classmates.', adminNav: 'Admin settings',
     createEvent: 'Create an event', createStudy: 'Create a study session', titleLabel: 'Title', descriptionLabel: 'Details', locationLabel: 'Place', dateTimeLabel: 'Date and time', capacityLabel: 'Seats', publishEvent: 'Publish event', publishStudy: 'Publish session',
     attendees: 'attending', waitingList: 'waiting', host: 'Hosted by', joinEvent: 'Join event', joinStudy: 'Join session', joinWaitlist: 'Join waitlist', leaveEvent: 'Cancel RSVP', onWaitlist: 'Waitlist position {position}', noEvents: 'No upcoming sessions', noEventsBody: 'Create the first one for your campus.', eventCreated: 'Your event is on the calendar.', studyCreated: 'Your study session is ready.',
-    translate: 'Translate', translationLabel: 'Translation', translateFrom: 'Post language', translateDisclosure: 'The post text will be sent to MyMemory to provide this translation.', translating: 'Translating…', translationFailed: 'Could not translate this post. Try again later.', translationSameLanguage: 'Choose a post language different from your interface language.', sourceEnglish: 'English', sourceKazakh: 'Kazakh', sourceRussian: 'Russian',
+    translate: 'Translate', translationTitle: 'Translate this post', translationInstructions: 'Choose the language the post is written in. Target language: {language}.', translationLabel: 'Translation: {source} → {target}', translateFrom: 'This post is written in', translateSourcePlaceholder: 'Choose a language', translateDisclosure: 'When you translate, MyMemory receives the post text and selected languages. It is an external service, so avoid translating private or sensitive details.', translationQualityNote: 'Automatic translations may miss context. The service has a daily usage limit. Check important details.', translateAction: 'Translate → {language}', translateAgain: 'Try again', translating: 'Translating…', translationProgress: 'Translation is in progress. Longer posts may take a little while.', translationChooseSource: 'Choose the language of the post to continue.', translationFailed: 'Could not translate this post right now. Your original post is unchanged. Please try again.', translationLimit: 'The translation service has reached its usage limit. Please try again later.', translationSameLanguage: 'Both languages are {language}. Choose a different post language or change the app language.', sourceEnglish: 'English', sourceKazakh: 'Kazakh', sourceRussian: 'Russian',
     accessibility: 'Accessibility', textSize: 'Larger text', highContrast: 'High contrast', reduceMotion: 'Reduce motion',
     focusTitle: 'Focus timer', focusSubtitle: 'A quiet sprint for your next study session.', focusSprint: '25 minute focus', shortBreak: '5 minute break', startTimer: 'Start', pauseTimer: 'Pause', resetTimer: 'Reset', focusFinished: 'Focus sprint complete. Take a short break.', breakFinished: 'Break finished. Ready for another focus sprint?',
     adminTitle: 'Campus capacity', adminSubtitle: 'Set the maximum number of student accounts allowed to register.', bootstrapTitle: 'Set up the first administrator', bootstrapDescription: 'Enter the one-time setup key from the project owner.', setupKey: 'Administrator setup key', claimAdmin: 'Enable administrator access', accountCapacity: 'Maximum student accounts', currentStudents: '{count} student accounts are registered.', saveCapacity: 'Save capacity', capacitySaved: 'Campus capacity updated.',
@@ -54,14 +55,14 @@ const messages = {
 Object.assign(messages.kk, {
   eventsNav: 'Іс-шаралар', eventsTitle: 'Кампус іс-шаралары', eventsSubtitle: 'Іс-шара тауып, қатысу орныңызды сақтаңыз.', studyNav: 'Бірге оқу', studyTitle: 'Бірге оқу', studySubtitle: 'Тыныш оқу кездесуін ұйымдастырып, курстастарыңызды шақырыңыз.', adminNav: 'Әкімші параметрлері',
   createEvent: 'Іс-шара қосу', createStudy: 'Оқу кездесуін қосу', titleLabel: 'Атауы', descriptionLabel: 'Сипаттамасы', locationLabel: 'Өтетін орны', dateTimeLabel: 'Күні мен уақыты', capacityLabel: 'Орын саны', publishEvent: 'Жариялау', publishStudy: 'Кездесуді жариялау', attendees: 'қатысушы', waitingList: 'күту тізімі', host: 'Ұйымдастырушы', joinEvent: 'Қатысу', joinStudy: 'Кездесуге қосылу', joinWaitlist: 'Күту тізіміне қосылу', leaveEvent: 'Қатысудан бас тарту', onWaitlist: 'Күту тізіміндегі орны: {position}', noEvents: 'Алдағы кездесулер жоқ', noEventsBody: 'Кампусыңызда алғашқы кездесуді ұйымдастырыңыз.', eventCreated: 'Іс-шара күнтізбеге қосылды.', studyCreated: 'Оқу кездесуі жарияланды.',
-  translate: 'Аудару', translationLabel: 'Аударма', translateFrom: 'Жазба тілі', translateDisclosure: 'Аударма жасау үшін жазба мәтіні MyMemory қызметіне жіберіледі.', translating: 'Аударылуда…', translationFailed: 'Жазбаны аудару мүмкін болмады. Кейін қайталап көріңіз.', translationSameLanguage: 'Жазба тілінен басқа аудару тілін таңдаңыз.', sourceEnglish: 'Ағылшын тілі', sourceKazakh: 'Қазақ тілі', sourceRussian: 'Орыс тілі',
+  translate: 'Аудару', translationTitle: 'Жазбаны аудару', translationInstructions: 'Жазба қай тілде екенін таңдаңыз. Аударма тілі: {language}.', translationLabel: 'Аударма: {source} → {target}', translateFrom: 'Жазба қай тілде?', translateSourcePlaceholder: 'Тілді таңдаңыз', translateDisclosure: 'Аударуды таңдағанда, жазба мәтіні мен тілдер MyMemory қызметіне жіберіледі. Бұл — сыртқы қызмет. Жеке немесе құпия ақпаратты аудармаңыз.', translationQualityNote: 'Автоматты аудармада контекст жоғалуы мүмкін. Қызметтің күндік шегі бар. Маңызды ақпаратты тексеріңіз.', translateAction: 'Аудару → {language}', translateAgain: 'Қайталау', translating: 'Аударылуда…', translationProgress: 'Аударма жүріп жатыр. Ұзақ жазбаны аударуға біраз уақыт кетуі мүмкін.', translationChooseSource: 'Жалғастыру үшін жазба тілін таңдаңыз.', translationFailed: 'Қазір аудару мүмкін болмады. Бастапқы жазба өзгерген жоқ. Қайталап көріңіз.', translationLimit: 'Аударма қызметінің қолданыс шегіне жетті. Кейінірек қайталап көріңіз.', translationSameLanguage: 'Жазба мен қолданба тілі — {language}. Басқа жазба тілін таңдаңыз немесе қолданба тілін өзгертіңіз.', sourceEnglish: 'Ағылшын тілі', sourceKazakh: 'Қазақ тілі', sourceRussian: 'Орыс тілі',
   accessibility: 'Қолжетімділік', textSize: 'Үлкен қаріп', highContrast: 'Жоғары контраст', reduceMotion: 'Қозғалысты азайту', focusTitle: 'Зейін таймері', focusSubtitle: 'Келесі оқу сессиясына тыныш таймер.', focusSprint: '25 минут оқу', shortBreak: '5 минут үзіліс', startTimer: 'Бастау', pauseTimer: 'Үзіліс', resetTimer: 'Қайта бастау', focusFinished: 'Оқу уақыты аяқталды. Қысқа үзіліс жасаңыз.', breakFinished: 'Үзіліс аяқталды. Қайта оқуға дайынсыз ба?',
   adminTitle: 'Кампус сыйымдылығы', adminSubtitle: 'Тіркеле алатын студент аккаунттарының ең көп санын белгілеңіз.', bootstrapTitle: 'Алғашқы әкімшіні орнату', bootstrapDescription: 'Жоба иесінен алынған бір реттік кілтті енгізіңіз.', setupKey: 'Әкімші кілті', claimAdmin: 'Әкімші рөлін қосу', accountCapacity: 'Студент аккаунттарының шегі', currentStudents: 'Тіркелген студент аккаунттары: {count}.', saveCapacity: 'Шекті сақтау', capacitySaved: 'Кампус шегі жаңартылды.',
 });
 Object.assign(messages.ru, {
   eventsNav: 'События', eventsTitle: 'События кампуса', eventsSubtitle: 'Найдите событие и забронируйте место.', studyNav: 'Учиться вместе', studyTitle: 'Учиться вместе', studySubtitle: 'Создайте совместную учебную встречу и пригласите однокурсников.', adminNav: 'Настройки администратора',
   createEvent: 'Создать событие', createStudy: 'Создать учебную встречу', titleLabel: 'Название', descriptionLabel: 'Описание', locationLabel: 'Место', dateTimeLabel: 'Дата и время', capacityLabel: 'Места', publishEvent: 'Опубликовать событие', publishStudy: 'Опубликовать встречу', attendees: 'участников', waitingList: 'в листе ожидания', host: 'Организатор', joinEvent: 'Записаться', joinStudy: 'Присоединиться', joinWaitlist: 'Встать в лист ожидания', leaveEvent: 'Отменить запись', onWaitlist: 'Место в листе ожидания: {position}', noEvents: 'Предстоящих встреч пока нет', noEventsBody: 'Создайте первую встречу для кампуса.', eventCreated: 'Событие добавлено в календарь.', studyCreated: 'Учебная встреча опубликована.',
-  translate: 'Перевести', translationLabel: 'Перевод', translateFrom: 'Язык поста', translateDisclosure: 'Текст поста будет отправлен в MyMemory для перевода.', translating: 'Переводим…', translationFailed: 'Не удалось перевести пост. Попробуйте позже.', translationSameLanguage: 'Выберите язык поста, отличный от языка интерфейса.', sourceEnglish: 'Английский', sourceKazakh: 'Казахский', sourceRussian: 'Русский',
+  translate: 'Перевести', translationTitle: 'Перевести этот пост', translationInstructions: 'Выберите язык поста. Язык перевода: {language}.', translationLabel: 'Перевод: {source} → {target}', translateFrom: 'На каком языке этот пост?', translateSourcePlaceholder: 'Выберите язык', translateDisclosure: 'При переводе текст поста и выбранные языки отправляются в MyMemory — внешний сервис. Не переводите личную или конфиденциальную информацию.', translationQualityNote: 'Автоматический перевод может упустить контекст. У сервиса есть дневной лимит. Проверьте важные детали.', translateAction: 'Перевести → {language}', translateAgain: 'Попробовать ещё раз', translating: 'Переводим…', translationProgress: 'Идёт перевод. Длинный пост может переводиться чуть дольше.', translationChooseSource: 'Чтобы продолжить, выберите язык поста.', translationFailed: 'Сейчас не удалось перевести пост. Оригинал не изменился. Попробуйте ещё раз.', translationLimit: 'Сервис перевода достиг лимита использования. Попробуйте позже.', translationSameLanguage: 'Пост и приложение используют язык «{language}». Выберите другой язык поста или измените язык приложения.', sourceEnglish: 'Английский', sourceKazakh: 'Казахский', sourceRussian: 'Русский',
   accessibility: 'Доступность', textSize: 'Крупный текст', highContrast: 'Высокая контрастность', reduceMotion: 'Меньше анимации', focusTitle: 'Таймер фокуса', focusSubtitle: 'Тихий таймер для следующей учебной сессии.', focusSprint: '25 минут учёбы', shortBreak: 'Перерыв 5 минут', startTimer: 'Начать', pauseTimer: 'Пауза', resetTimer: 'Сбросить', focusFinished: 'Учебный спринт завершён. Сделайте короткий перерыв.', breakFinished: 'Перерыв окончен. Готовы продолжить?',
   adminTitle: 'Вместимость кампуса', adminSubtitle: 'Установите максимальное число аккаунтов студентов.', bootstrapTitle: 'Настройка первого администратора', bootstrapDescription: 'Введите одноразовый ключ от владельца проекта.', setupKey: 'Ключ администратора', claimAdmin: 'Включить роль администратора', accountCapacity: 'Максимум аккаунтов студентов', currentStudents: 'Зарегистрировано аккаунтов: {count}.', saveCapacity: 'Сохранить лимит', capacitySaved: 'Лимит кампуса обновлён.',
 });
@@ -69,6 +70,22 @@ Object.assign(messages.ru, {
 const storedLocale = (() => { try { return localStorage.getItem('campus-locale'); } catch { return null; } })();
 function readLocalJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; }
+}
+function readTranslationCache(userId) {
+  try {
+    const cache = JSON.parse(sessionStorage.getItem(`campus-translations-v1-${userId}`) || '{}');
+    return Object.fromEntries(Object.entries(cache).filter(([, value]) =>
+      value && supportedLanguages.includes(value.source) && supportedLanguages.includes(value.target)
+      && typeof value.text === 'string' && typeof value.updatedAt === 'string'
+    ));
+  } catch { return {}; }
+}
+function saveTranslationCache() {
+  const recent = Object.entries(state.translations)
+    .sort(([, a], [, b]) => Number(a.translatedAt || 0) - Number(b.translatedAt || 0))
+    .slice(-100);
+  state.translations = Object.fromEntries(recent);
+  try { sessionStorage.setItem(`campus-translations-v1-${state.user.user_id}`, JSON.stringify(state.translations)); } catch {}
 }
 const storedAccessibility = readLocalJson('campus-accessibility', {});
 const storedFocus = readLocalJson('campus-focus-timer', {});
@@ -82,6 +99,10 @@ const state = {
 if (state.focus.activeUntil) state.focus.secondsLeft = Math.max(0, Math.ceil((state.focus.activeUntil - Date.now()) / 1000));
 state.i18n = messages[state.locale];
 const tr = (key, variables = {}) => String(state.i18n[key] ?? messages.en[key] ?? key).replace(/\{(\w+)\}/g, (_, name) => String(variables[name] ?? ''));
+function translationLanguageName(code) {
+  const key = { en: 'sourceEnglish', kk: 'sourceKazakh', ru: 'sourceRussian' }[code];
+  return key ? tr(key) : String(code || '');
+}
 function saveAccessibility() {
   try { localStorage.setItem('campus-accessibility', JSON.stringify(state.accessibility)); } catch {}
 }
@@ -122,20 +143,48 @@ function updateFocusClock() {
 let focusInterval = null;
 async function translatePost(button) {
   const id = Number(button.dataset.id);
-  const post = document.querySelector(`.post-card[data-post="${id}"]`);
-  const source = post?.querySelector('[data-translate-source]')?.value || 'en';
+  const post = button.closest('.post-card');
+  const source = post?.querySelector('[data-translate-source]')?.value || '';
   const target = state.locale;
-  const item = [...state.posts, ...(state.profile?.posts || [])].find(entry => Number(entry.post_id) === id);
-  if (!item) throw new Error(tr('translationFailed'));
-  if (source === target) throw new Error(tr('translationSameLanguage'));
+  const feedback = post?.querySelector('[data-translation-feedback]');
+  const showFeedback = (message, isError = false) => {
+    if (!feedback) return;
+    feedback.textContent = message;
+    feedback.classList.toggle('error', isError);
+    feedback.setAttribute('role', isError ? 'alert' : 'status');
+    feedback.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+  };
+  if (!source) {
+    showFeedback(tr('translationChooseSource'), true);
+    return;
+  }
+  if (source === target) {
+    showFeedback(tr('translationSameLanguage', { language: translationLanguageName(source) }), true);
+    return;
+  }
   button.disabled = true;
   button.textContent = tr('translating');
+  button.setAttribute('aria-busy', 'true');
+  showFeedback(tr('translationProgress'));
   try {
     const result = await api('translate', { method: 'POST', body: JSON.stringify({ post_id: id, source, target }) });
-    state.translations[id] = { target, text: result.translation };
+    state.translations[id] = {
+      source, target, text: result.translation,
+      updatedAt: post.dataset.updatedAt || '', translatedAt: Date.now(),
+    };
+    saveTranslationCache();
     render();
-  } finally {
-    if (button.isConnected) { button.disabled = false; button.textContent = tr('translate'); }
+  } catch (error) {
+    const localized = localizeServerError(error.message);
+    const message = localized === error.message ? tr('translationFailed') : localized;
+    if (feedback?.isConnected) {
+      showFeedback(message, true);
+      button.disabled = false;
+      button.textContent = tr('translateAgain');
+      button.removeAttribute('aria-busy');
+    } else {
+      toast(message, true);
+    }
   }
 }
 const esc = (value = '') => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -157,10 +206,17 @@ function localizeServerError(message) {
     'Email or password is incorrect.': 'errorCredentials', 'Post must be between 1 and 2000 characters.': 'errorPost',
     'Comment must be between 1 and 500 characters.': 'errorComment', 'Post not found.': 'errorNotFound',
     'The translation service is unavailable. Please try again later.': 'translationFailed',
+    'The translation service has reached its usage limit. Please try again later.': 'translationLimit',
+    'Choose a post language different from your interface language.': 'translationSameLanguage',
     'You can only edit your own posts.': 'errorOwnerEdit', 'You can only delete your own posts.': 'errorOwnerDelete',
     'Something went wrong. Please try again.': 'errorGeneric',
   };
-  if (exact[message]) return tr(exact[message]);
+  if (exact[message]) {
+    const key = exact[message];
+    return key === 'translationSameLanguage'
+      ? tr(key, { language: translationLanguageName(state.locale) })
+      : tr(key);
+  }
   const capacity = message.match(/reached its (\d+)-student account limit/i);
   if (capacity) return tr('errorCapacity', { count: capacity[1] });
   return message || tr('errorGeneric');
@@ -228,9 +284,28 @@ function postCard(p){
   const commentCount = Number(p.comment_count) || 0;
   const likedLabel = p.liked_by_me ? label('liked') : label('like');
   const savedLabel = p.saved_by_me ? label('saved') : label('save');
-  const translated = state.translations?.[p.post_id]?.target === state.locale ? state.translations[p.post_id] : null;
+  const cachedTranslation = state.translations?.[p.post_id];
+  const translated = cachedTranslation && cachedTranslation.updatedAt === String(p.updated_at || '') ? cachedTranslation : null;
   const sourceLanguages = [['en', label('sourceEnglish')], ['kk', label('sourceKazakh')], ['ru', label('sourceRussian')]];
-  return `<article class="post-card" data-post="${p.post_id}"><div class="post-head">${avatar(p.full_name)}<div class="post-author-block"><div class="post-author"><a href="#profile/${p.user_id}" data-route="profile" data-id="${p.user_id}">${esc(p.full_name)}</a></div><div class="post-meta">${esc(p.major || state.i18n?.student || 'Student')} · ${date(p.created_at)}${wasEdited ? ` · ${label('edited')}` : ''}</div></div>${owner ? `<div class="post-owner-actions"><button class="icon-button" data-action="edit-post" data-id="${p.post_id}" title="${label('edit')}" aria-label="${label('edit')}">✎</button><button class="icon-button" data-action="delete-post" data-id="${p.post_id}" title="${label('remove')}" aria-label="${label('remove')}">×</button></div>` : ''}</div>${editing ? `<form class="edit-post-form" data-post="${p.post_id}"><textarea name="content" maxlength="2000" required aria-label="${label('edit')}">${esc(p.content)}</textarea><div class="edit-post-controls"><button class="button ghost small" type="button" data-action="cancel-edit-post">${label('cancel')}</button><button class="button small">${label('saveChanges')}</button></div></form>` : `<div class="post-content">${esc(p.content)}</div>`}${translated ? `<section class="translated-post" lang="${esc(translated.target)}"><b>${esc(label('translationLabel'))}</b><p>${esc(translated.text)}</p></section>` : ''}<div class="post-stats"><span>♡ ${likeCount} ${label('likes')}</span><span>◌ ${commentCount} ${label('comments')}</span></div><div class="post-actions"><button class="action ${p.liked_by_me ? 'on' : ''}" data-action="like" data-id="${p.post_id}" aria-pressed="${Boolean(p.liked_by_me)}">${p.liked_by_me ? '♥' : '♡'} ${likedLabel}</button><button class="action" data-action="focus-comment" data-id="${p.post_id}">◌ ${label('comment')}</button><button class="action save-action ${p.saved_by_me ? 'on' : ''}" data-action="bookmark" data-id="${p.post_id}" aria-pressed="${Boolean(p.saved_by_me)}">${p.saved_by_me ? '▣' : '♧'} ${savedLabel}</button><details class="translate-tools"><summary class="action">↗ ${esc(label('translate'))}</summary><div class="translation-panel"><p>${esc(label('translateDisclosure'))}</p><label>${esc(label('translateFrom'))}<select data-translate-source>${sourceLanguages.map(([code, name]) => `<option value="${code}">${esc(name)}</option>`).join('')}</select></label><button class="button small" type="button" data-action="translate-post" data-id="${p.post_id}">${esc(label('translate'))} to ${esc(localeNames[state.locale])}</button></div></details></div>${p.comments.length ? `<div class="comment-list">${p.comments.map(comment => `<div class="comment"><b>${esc(comment.full_name)}</b>${esc(comment.content)}</div>`).join('')}</div>` : ''}<form class="comment-form" data-post="${p.post_id}"><input name="content" maxlength="500" placeholder="${label('commentPlaceholder')}" aria-label="${label('commentPlaceholder')}"><button class="button secondary small">${label('send')}</button></form></article>`;
+  return `<article class="post-card" data-post="${p.post_id}" data-updated-at="${esc(p.updated_at || '')}">
+    <div class="post-head">${avatar(p.full_name)}<div class="post-author-block"><div class="post-author"><a href="#profile/${p.user_id}" data-route="profile" data-id="${p.user_id}">${esc(p.full_name)}</a></div><div class="post-meta">${esc(p.major || state.i18n?.student || 'Student')} · ${date(p.created_at)}${wasEdited ? ` · ${label('edited')}` : ''}</div></div>${owner ? `<div class="post-owner-actions"><button class="icon-button" data-action="edit-post" data-id="${p.post_id}" title="${label('edit')}" aria-label="${label('edit')}">✎</button><button class="icon-button" data-action="delete-post" data-id="${p.post_id}" title="${label('remove')}" aria-label="${label('remove')}">×</button></div>` : ''}</div>
+    ${editing ? `<form class="edit-post-form" data-post="${p.post_id}"><textarea name="content" maxlength="2000" required aria-label="${label('edit')}">${esc(p.content)}</textarea><div class="edit-post-controls"><button class="button ghost small" type="button" data-action="cancel-edit-post">${label('cancel')}</button><button class="button small">${label('saveChanges')}</button></div></form>` : `<div class="post-content">${esc(p.content)}</div>`}
+    ${translated ? `<section class="translated-post" lang="${esc(translated.target)}"><b>${esc(label('translationLabel').replace('{source}', translationLanguageName(translated.source)).replace('{target}', translationLanguageName(translated.target)))}</b><p>${esc(translated.text)}</p></section>` : ''}
+    <div class="post-stats"><span>♡ ${likeCount} ${label('likes')}</span><span>◌ ${commentCount} ${label('comments')}</span></div>
+    <div class="post-actions"><button class="action ${p.liked_by_me ? 'on' : ''}" data-action="like" data-id="${p.post_id}" aria-pressed="${Boolean(p.liked_by_me)}">${p.liked_by_me ? '♥' : '♡'} ${likedLabel}</button><button class="action" data-action="focus-comment" data-id="${p.post_id}">◌ ${label('comment')}</button><button class="action save-action ${p.saved_by_me ? 'on' : ''}" data-action="bookmark" data-id="${p.post_id}" aria-pressed="${Boolean(p.saved_by_me)}">${p.saved_by_me ? '▣' : '♧'} ${savedLabel}</button>
+      <details class="translate-tools"><summary class="action">↗ ${esc(label('translate'))}</summary><div class="translation-panel">
+        <h3>${esc(label('translationTitle'))}</h3>
+        <p id="translation-instructions-${p.post_id}" class="translation-instructions">${esc(label('translationInstructions').replace('{language}', translationLanguageName(state.locale)))}</p>
+        <label for="translation-source-${p.post_id}">${esc(label('translateFrom'))}<select id="translation-source-${p.post_id}" data-translate-source aria-label="${esc(label('translateFrom'))}"><option value="" selected disabled>${esc(label('translateSourcePlaceholder'))}</option>${sourceLanguages.map(([code, name]) => `<option value="${code}">${esc(name)}</option>`).join('')}</select></label>
+        <p class="translation-disclosure">${esc(label('translateDisclosure'))}</p>
+        <p class="translation-quality-note">${esc(label('translationQualityNote'))}</p>
+        <button class="button small" type="button" data-action="translate-post" data-id="${p.post_id}" aria-describedby="translation-instructions-${p.post_id} translation-note-${p.post_id}" disabled>${esc(label('translateAction').replace('{language}', translationLanguageName(state.locale)))}</button>
+        <p id="translation-note-${p.post_id}" class="translation-feedback" data-translation-feedback aria-live="polite"></p>
+      </div></details>
+    </div>
+    ${p.comments.length ? `<div class="comment-list">${p.comments.map(comment => `<div class="comment"><b>${esc(comment.full_name)}</b>${esc(comment.content)}</div>`).join('')}</div>` : ''}
+    <form class="comment-form" data-post="${p.post_id}"><input name="content" maxlength="500" placeholder="${label('commentPlaceholder')}" aria-label="${label('commentPlaceholder')}"><button class="button secondary small">${label('send')}</button></form>
+  </article>`;
 }
 function empty(icon, title, message) {
   return `<div class="empty"><div class="empty-icon" aria-hidden="true">${icon}</div><b>${esc(title)}</b><p>${esc(message)}</p></div>`;
@@ -352,11 +427,32 @@ async function refresh() {
   render();
 }
 
+function updateTranslationSelection(select) {
+  const panel = select.closest('.translation-panel');
+  const button = panel?.querySelector('[data-action="translate-post"]');
+  const feedback = panel?.querySelector('[data-translation-feedback]');
+  if (!button || !feedback) return;
+  const source = select.value;
+  const sameLanguage = Boolean(source && source === state.locale);
+  button.disabled = !source || sameLanguage;
+  button.textContent = tr('translateAction', { language: translationLanguageName(state.locale) });
+  feedback.textContent = sameLanguage
+    ? tr('translationSameLanguage', { language: translationLanguageName(source) })
+    : '';
+  feedback.classList.toggle('error', sameLanguage);
+  feedback.setAttribute('role', sameLanguage ? 'alert' : 'status');
+  feedback.setAttribute('aria-live', sameLanguage ? 'assertive' : 'polite');
+}
+
 app.addEventListener('change', event => {
   if (event.target.matches('[data-a11y-pref]')) {
     state.accessibility[event.target.dataset.a11yPref] = event.target.checked;
     saveAccessibility();
     applyAccessibility();
+    return;
+  }
+  if (event.target.matches('[data-translate-source]')) {
+    updateTranslationSelection(event.target);
     return;
   }
   if (!event.target.matches('[data-language]')) return;
@@ -484,6 +580,7 @@ async function init() {
     state.adminSetupAvailable = adminSetup.enabled;
     state.user = session.user;
     if (state.user) {
+      state.translations = readTranslationCache(state.user.user_id);
       if (route) state.route = route;
       state.profileId = id || state.user.user_id;
       if (state.route === 'discover') state.search = new URLSearchParams(location.search).get('q') || '';

@@ -27,7 +27,7 @@ Campus is a small student community where people can share campus updates, meet 
 | FR-04 | A student can save or unsave any visible post and revisit saved posts in a private list. Saved state is unique per student/post and persists between sessions. | `POST`/`DELETE /api/posts/:id/bookmark`; `GET /api/bookmarks`; unique database constraint and user-scoped query. |
 | FR-05 | A successful sign-in remains valid for 30 days by default. | Session row expiry and HttpOnly cookie use the same duration; `SESSION_DAYS` can change it from 1 to 365. |
 | FR-06 | Registration stops at a campus account limit of 500 by default and returns a clear conflict response when full. An administrator can change the persistent limit. | `MAX_USERS` seeds the initial setting; `PUT /api/admin/settings` changes it after the first administrator is configured. |
-| FR-07 | Core interface content is available in English, Kazakh, and Russian. Students can translate a post into the selected interface language. | The language picker is saved in the browser. Post controls ask for the source language, disclose the translation provider, and keep the original visible. |
+| FR-07 | Core interface content is available in English, Kazakh, and Russian. Students can translate a post into the selected interface language. | Translation requires an explicit source language, shows the target language and external-service disclosure, keeps the original visible, provides inline progress/errors, and caches the result for the current tab. |
 | FR-08 | Students can create campus events with a future start time, place, and seat capacity. Each student can RSVP once. | `POST /api/events`, `POST`/`DELETE /api/events/:id/rsvp`, unique `(event_id, user_id)` in `event_rsvps`, and the Events page. |
 | FR-09 | A full event accepts additional sign-ups in a FIFO waitlist and moves the next student into an open seat when an RSVP is cancelled. | RSVP order is stored by `rsvp_id`; displayed attendance and waitlist positions derive from that order and capacity. |
 | FR-10 | Students can create and join co-working sessions with a topic, location, start time, and seat limit. | Study sessions use the same event and waitlist system under the `study` kind. |
@@ -55,7 +55,7 @@ Campus is a small student community where people can share campus updates, meet 
 - Store events and study sessions in `events`; store sign-ups in `event_rsvps` with a unique event/user pair and queue order. Use the same schema in SQLite and Postgres.
 - Store the adjustable campus account limit in `app_settings`; only accounts with the persisted `admin` role can change it.
 - Require a one-time `ADMIN_BOOTSTRAP_TOKEN` (at least 32 characters) to configure the first administrator. Remove it after bootstrap.
-- Send post text to MyMemory through the authenticated server route only after the student expands Translate and presses the translation button. Keep each provider request below its documented 500-byte segment limit.
+- Send post text and language pair to MyMemory through the authenticated server route only after the student chooses a source language and presses Translate. Disclose the external service, keep each request below the documented segment limit, and send one paragraph at a time.
 - Return only the signed-in student's saved posts from `/api/bookmarks`; never return another student's bookmark list.
 - Return public configuration through `/api/meta`: `session_days` and `max_users`.
 - Keep SQLite and Postgres schemas aligned.

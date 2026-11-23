@@ -175,20 +175,31 @@ function splitTranslationText(value, limit = 450) {
 
 async function translatePostContent(content, source, target) {
   const translated = [];
-  for (const chunk of splitTranslationText(content)) {
-    const url = new URL('https://api.mymemory.translated.net/get');
-    url.searchParams.set('q', chunk);
-    url.searchParams.set('langpair', `${source}|${target}`);
-    let response;
-    let data;
-    try {
-      response = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(8000) });
-      if (response.ok) data = await response.json();
-    } catch {}
-    if (!response?.ok || Number(data?.responseStatus) !== 200 || typeof data?.responseData?.translatedText !== 'string') {
-      fail(502, 'The translation service is unavailable. Please try again later.');
+  const paragraphs = String(content).split(/(\r?\n)/u);
+  for (const paragraph of paragraphs) {
+    if (/^\r?\n$/u.test(paragraph)) {
+      translated.push(paragraph);
+      continue;
     }
-    translated.push(data.responseData.translatedText);
+    for (const chunk of splitTranslationText(paragraph)) {
+      const url = new URL('https://api.mymemory.translated.net/get');
+      url.searchParams.set('q', chunk);
+      url.searchParams.set('langpair', `${source}|${target}`);
+      let response;
+      let data;
+      try {
+        response = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(8000) });
+        data = await response.json().catch(() => null);
+      } catch {}
+      const details = String(data?.responseDetails || '');
+      const limitReached = response?.status === 429 || Number(data?.responseStatus) === 429
+        || /quota|too many requests|(?:usage|daily|rate).{0,40}(?:limit|exceed|reach)|(?:limit|exceed|reach).{0,40}(?:usage|daily|quota|rate)|(?:used|reach|exceed).{0,40}(?:free|daily|quota|limit)|free.{0,25}translations.{0,25}today|exceed(?:ed|ing)?.{0,30}(?:limit|guideline)/iu.test(details);
+      if (limitReached) fail(429, 'The translation service has reached its usage limit. Please try again later.');
+      if (!response?.ok || Number(data?.responseStatus) !== 200 || typeof data?.responseData?.translatedText !== 'string' || !data.responseData.translatedText.trim()) {
+        fail(502, 'The translation service is unavailable. Please try again later.');
+      }
+      translated.push(data.responseData.translatedText);
+    }
   }
   return translated.join('');
 }
