@@ -1,4 +1,4 @@
-# Campus Student Social Network
+# Campus Student Social Network!
 
 A campus community app for student profiles, a post feed, comments, likes, student search, follows, and private saved posts. The interface supports English, Kazakh, and Russian. Local runs store records in a persistent SQLite database and include fictional demo accounts for a classroom walkthrough.
 
