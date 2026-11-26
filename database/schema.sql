@@ -12,11 +12,12 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS posts (
   post_id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-  content TEXT NOT NULL CHECK(length(content) BETWEEN 1 AND 2000),
+  content TEXT NOT NULL,
   image_data TEXT NOT NULL DEFAULT '',
   image_alt TEXT NOT NULL DEFAULT '' CHECK(length(image_alt) <= 200),
   created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  CONSTRAINT posts_content_or_photo CHECK(length(content) <= 2000 AND (content <> '' OR image_data <> ''))
 );
 CREATE TABLE IF NOT EXISTS comments (
   comment_id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -4,9 +4,10 @@ function reject(status, message) {
   throw error;
 }
 
-function validatePostContent(value) {
+function validatePostContent(value, hasPhoto = false) {
   const content = String(value ?? '').trim();
-  if (!content || content.length > 2000) reject(400, 'Post must be between 1 and 2000 characters.');
+  if (!content && !hasPhoto) reject(400, 'Write a post or add a photo.');
+  if (content.length > 2000) reject(400, 'Post text must be 2000 characters or fewer.');
   return content;
 }
 

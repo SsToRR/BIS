@@ -501,7 +501,7 @@ test('AC-28 request bodies larger than 20000 characters return 413', async () =>
 test('post photos can be uploaded, viewed, replaced, described, and removed', async () => {
   const png = 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEklEQVR4nGNkYPjPwMDAxAAGAAsfAQMU4wsAAAAAAElFTkSuQmCC';
   const webp = 'UklGRjoAAABXRUJQVlA4IC4AAACQAQCdASoCAAIAAUAmJaACdLoAA5gA/vtV4/+lwf/S4P/pcH/pcH8bss4bpAAA';
-  const content = 'A campus photo';
+  const content = '';
   const created = await request('posts', {
     method: 'POST', body: { content, image_data: `data:image/png;base64,${png}`, image_alt: 'Campus' },
   });
@@ -515,6 +515,7 @@ test('post photos can be uploaded, viewed, replaced, described, and removed', as
     const photoPost = posts.find(post => post.post_id === id);
     assert.equal(photoPost?.has_image, true, route);
     assert.equal(photoPost.image_alt, 'Campus');
+    assert.equal(photoPost.content, '');
     assert.equal(Object.hasOwn(photoPost, 'image_data'), false);
   }
   const original = await request(imagePath, { token: otherToken });
@@ -533,7 +534,11 @@ test('post photos can be uploaded, viewed, replaced, described, and removed', as
   const { posts: updated } = await (await request('feed')).json();
   assert.equal(updated.find(post => post.post_id === id).image_alt, 'Students in the study hall');
 
-  assert.equal((await edit({ remove_image: true })).status, 200);
+  const emptyEdit = await edit({ remove_image: true });
+  assert.equal(emptyEdit.status, 400);
+  assert.equal((await emptyEdit.json()).error, 'Write a post or add a photo.');
+  assert.equal((await request(imagePath)).status, 200);
+  assert.equal((await edit({ remove_image: true, content: 'A campus photo' })).status, 200);
   assert.equal((await request(imagePath)).status, 404);
   const { posts: afterRemoval } = await (await request('feed')).json();
   const removed = afterRemoval.find(post => post.post_id === id);

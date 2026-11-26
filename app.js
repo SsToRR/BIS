@@ -6,6 +6,8 @@ const maxPostPhotoBytes = 1_400_000;
 const messages = {
   en: {
     addPhoto: 'Add photo', replacePhoto: 'Replace photo', removePhoto: 'Remove photo',
+    photoAccessibility: 'Accessibility', photoCaption: 'Write a caption (optional)…',
+    postEmpty: 'Write a post or add a photo.', postTooLong: 'Post text must be 2000 characters or fewer.',
     photoDescription: 'Photo description for screen readers', postPhoto: 'Photo shared by {name}',
     photoType: 'Choose a PNG, JPEG, or WebP image.', photoTooLarge: 'Photo must be 1.4 MB or smaller.',
     photoDescriptionTooLong: 'Photo description must be 200 characters or fewer.',
@@ -31,6 +33,8 @@ const messages = {
   },
   kk: {
     addPhoto: 'Фото қосу', replacePhoto: 'Фотоны ауыстыру', removePhoto: 'Фотоны өшіру',
+    photoAccessibility: 'Қолжетімділік', photoCaption: 'Фотоға мәтін жазыңыз (міндетті емес)…',
+    postEmpty: 'Жазба жазыңыз немесе фото қосыңыз.', postTooLong: 'Жазба мәтіні 2000 таңбадан аспауы керек.',
     photoDescription: 'Экраннан оқу бағдарламасына арналған фото сипаттамасы', postPhoto: '{name} бөліскен фото',
     photoType: 'PNG, JPEG немесе WebP пішіміндегі суретті таңдаңыз.', photoTooLarge: 'Фотоның өлшемі 1,4 МБ-тан аспауы керек.',
     photoDescriptionTooLong: 'Фото сипаттамасы 200 таңбадан аспауы керек.',
@@ -49,6 +53,8 @@ const messages = {
   },
   ru: {
     addPhoto: 'Добавить фото', replacePhoto: 'Заменить фото', removePhoto: 'Удалить фото',
+    photoAccessibility: 'Доступность', photoCaption: 'Добавьте подпись (необязательно)…',
+    postEmpty: 'Напишите пост или добавьте фото.', postTooLong: 'В тексте поста должно быть не более 2000 символов.',
     photoDescription: 'Описание фото для экранного диктора', postPhoto: 'Фото в публикации пользователя {name}',
     photoType: 'Выберите изображение в формате PNG, JPEG или WebP.', photoTooLarge: 'Размер фото не должен превышать 1,4 МБ.',
     photoDescriptionTooLong: 'Описание фото должно содержать не более 200 символов.',
@@ -225,6 +231,8 @@ function localizeServerError(message) {
     'Choose a PNG, JPEG, or WebP image.': 'photoType', 'The selected file does not match its image type.': 'photoType',
     'Photo must be 1.4 MB or smaller.': 'photoTooLarge',
     'Photo description must be between 1 and 200 characters.': 'photoDescriptionTooLong',
+    'Write a post or add a photo.': 'postEmpty',
+    'Post text must be 2000 characters or fewer.': 'postTooLong',
     'You can only edit your own posts.': 'errorOwnerEdit', 'You can only delete your own posts.': 'errorOwnerDelete',
     'Something went wrong. Please try again.': 'errorGeneric',
   };
@@ -304,17 +312,17 @@ function postCard(p){
   const sourceLanguages = [['en', label('sourceEnglish')], ['kk', label('sourceKazakh')], ['ru', label('sourceRussian')]];
   const photoAlt = p.has_image ? p.image_alt || tr('postPhoto', { name: p.full_name }) : '';
   const photo = p.has_image ? `<img class="post-image" data-current-photo src="/api/posts/${p.post_id}/image?v=${encodeURIComponent(p.updated_at || '')}" alt="${esc(photoAlt)}"${editing ? '' : ' loading="lazy"'}>` : '';
+  const caption = esc(tr(p.has_image ? 'photoCaption' : 'composerPlaceholder'));
   return `<article class="post-card" data-post="${p.post_id}" data-updated-at="${esc(p.updated_at || '')}">
     <div class="post-head">${avatar(p.full_name)}<div class="post-author-block"><div class="post-author"><a href="#profile/${p.user_id}" data-route="profile" data-id="${p.user_id}">${esc(p.full_name)}</a></div><div class="post-meta">${esc(p.major || state.i18n?.student || 'Student')} · ${date(p.created_at)}${wasEdited ? ` · ${label('edited')}` : ''}</div></div>${owner ? `<div class="post-owner-actions"><button class="icon-button" data-action="edit-post" data-id="${p.post_id}" title="${label('edit')}" aria-label="${label('edit')}">✎</button><button class="icon-button" data-action="delete-post" data-id="${p.post_id}" title="${label('remove')}" aria-label="${label('remove')}">×</button></div>` : ''}</div>
     ${editing ? `<form class="edit-post-form" data-post="${p.post_id}">
-      <textarea name="content" maxlength="2000" required aria-label="${label('edit')}">${esc(p.content)}</textarea>
-      ${photo}${photoFields(p)}
+      ${photoFields(`<textarea name="content" maxlength="2000" placeholder="${caption}" aria-label="${caption}">${esc(p.content)}</textarea>`, p, photo)}
       <div class="edit-post-controls"><button class="button ghost small" type="button" data-action="cancel-edit-post">${label('cancel')}</button><button class="button small">${label('saveChanges')}</button></div>
-    </form>` : `<div class="post-content">${esc(p.content)}</div>${photo}`}
+    </form>` : `${photo}${p.content ? `<div class="post-content">${esc(p.content)}</div>` : ''}`}
     ${translated ? `<section class="translated-post" lang="${esc(translated.target)}"><b>${esc(label('translationLabel').replace('{source}', translationLanguageName(translated.source)).replace('{target}', translationLanguageName(translated.target)))}</b><p>${esc(translated.text)}</p></section>` : ''}
     <div class="post-stats"><span>♡ ${likeCount} ${label('likes')}</span><span>◌ ${commentCount} ${label('comments')}</span></div>
     <div class="post-actions"><button class="action ${p.liked_by_me ? 'on' : ''}" data-action="like" data-id="${p.post_id}" aria-pressed="${Boolean(p.liked_by_me)}">${p.liked_by_me ? '♥' : '♡'} ${likedLabel}</button><button class="action" data-action="focus-comment" data-id="${p.post_id}">◌ ${label('comment')}</button><button class="action save-action ${p.saved_by_me ? 'on' : ''}" data-action="bookmark" data-id="${p.post_id}" aria-pressed="${Boolean(p.saved_by_me)}">${p.saved_by_me ? '▣' : '♧'} ${savedLabel}</button>
-      <details class="translate-tools"><summary class="action">↗ ${esc(label('translate'))}</summary><div class="translation-panel">
+      ${p.content ? `<details class="translate-tools"><summary class="action">↗ ${esc(label('translate'))}</summary><div class="translation-panel">
         <h3>${esc(label('translationTitle'))}</h3>
         <p id="translation-instructions-${p.post_id}" class="translation-instructions">${esc(label('translationInstructions'))}</p>
         <label for="translation-source-${p.post_id}">${esc(label('translateFrom'))}<select id="translation-source-${p.post_id}" data-translate-source aria-label="${esc(label('translateFrom'))}"><option value="" selected disabled>${esc(label('translateSourcePlaceholder'))}</option>${sourceLanguages.map(([code, name]) => `<option value="${code}">${esc(name)}</option>`).join('')}</select></label>
@@ -323,18 +331,30 @@ function postCard(p){
         <p class="translation-quality-note">${esc(label('translationQualityNote'))}</p>
         <button class="button small" type="button" data-action="translate-post" data-id="${p.post_id}" aria-describedby="translation-instructions-${p.post_id} translation-note-${p.post_id}" disabled>${esc(label('translateAction').replace('{language}', translationLanguageName(state.locale)))}</button>
         <p id="translation-note-${p.post_id}" class="translation-feedback" data-translation-feedback aria-live="polite"></p>
-      </div></details>
+      </div></details>` : ''}
     </div>
     ${p.comments.length ? `<div class="comment-list">${p.comments.map(comment => `<div class="comment"><b>${esc(comment.full_name)}</b>${esc(comment.content)}</div>`).join('')}</div>` : ''}
     <form class="comment-form" data-post="${p.post_id}"><input name="content" maxlength="500" placeholder="${label('commentPlaceholder')}" aria-label="${label('commentPlaceholder')}"><button class="button secondary small">${label('send')}</button></form>
   </article>`;
 }
-function photoFields(post = {}) {
+function photoFields(caption, post = {}, photo = '') {
+  const visibility = post.has_image ? '' : ' hidden';
   return `<div class="post-photo-fields">
-    <label>${esc(tr(post.has_image ? 'replacePhoto' : 'addPhoto'))}<input type="file" name="image_file" accept="${postPhotoTypes.join(',')}"></label>
-    <label>${esc(tr('photoDescription'))}<input type="text" name="image_alt" maxlength="200" value="${esc(post.image_alt || '')}"></label>
-    ${post.has_image ? `<label class="post-photo-remove"><input type="checkbox" name="remove_image">${esc(tr('removePhoto'))}</label>` : ''}
-  </div><div class="post-photo-preview" data-photo-preview></div>`;
+    <input type="file" name="image_file" accept="${postPhotoTypes.join(',')}" hidden>
+    <input type="hidden" name="remove_image" value="">
+    <div class="post-photo-preview" data-photo-preview${visibility}>
+      ${photo}<img class="post-image" data-selected-photo alt="" hidden>
+      <button type="button" class="icon-button post-photo-remove" data-photo-remove aria-label="${esc(tr('removePhoto'))}" title="${esc(tr('removePhoto'))}">×</button>
+    </div>
+    ${caption}
+    <div class="post-photo-actions">
+      <button type="button" class="button secondary small" data-photo-picker><span class="post-photo-icon" aria-hidden="true"></span><span data-photo-label>${esc(tr(post.has_image ? 'replacePhoto' : 'addPhoto'))}</span></button>
+      <details class="post-photo-accessibility" data-photo-accessibility${visibility}>
+        <summary>${esc(tr('photoAccessibility'))}</summary>
+        <label>${esc(tr('photoDescription'))}<input type="text" name="image_alt" maxlength="200" value="${esc(post.image_alt || '')}"></label>
+      </details>
+    </div>
+  </div>`;
 }
 function empty(icon, title, message) {
   return `<div class="empty"><div class="empty-icon" aria-hidden="true">${icon}</div><b>${esc(title)}</b><p>${esc(message)}</p></div>`;
@@ -343,7 +363,9 @@ function heading(title, subtitle) {
   return `<div class="heading"><div><span class="eyebrow">${esc(tr('communityEyebrow'))}</span><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div></div>`;
 }
 function feedPage() {
-  return `${heading(tr('feedTitle'), tr('feedSubtitle'))}<form class="composer" id="post-form"><div class="compose-row">${avatar(state.user.full_name)}<textarea class="compose-input" name="content" maxlength="2000" placeholder="${esc(tr('composerPlaceholder'))}" aria-label="${esc(tr('composerPlaceholder'))}"></textarea></div>${photoFields()}<div class="compose-footer"><span class="hint">${esc(tr('composerHint'))}</span><button class="button small">${esc(tr('share'))}<span aria-hidden="true"> ↗</span></button></div></form><section class="feed">${state.posts.length ? state.posts.map(postCard).join('') : empty('✳', tr('emptyFeedTitle'), tr('emptyFeedBody'))}</section>`;
+  const placeholder = esc(tr('composerPlaceholder'));
+  const caption = `<div class="compose-row">${avatar(state.user.full_name)}<textarea class="compose-input" name="content" maxlength="2000" placeholder="${placeholder}" aria-label="${placeholder}"></textarea></div>`;
+  return `${heading(tr('feedTitle'), tr('feedSubtitle'))}<form class="composer" id="post-form">${photoFields(caption)}<div class="compose-footer"><span class="hint">${esc(tr('composerHint'))}</span><button class="button small">${esc(tr('share'))}<span aria-hidden="true"> ↗</span></button></div></form><section class="feed">${state.posts.length ? state.posts.map(postCard).join('') : empty('✳', tr('emptyFeedTitle'), tr('emptyFeedBody'))}</section>`;
 }
 function studentCard(user) {
   const following = Boolean(user.followed_by_me);
@@ -464,29 +486,35 @@ function imageFileData(file) {
   });
 }
 
-async function updatePhotoPreview(input) {
-  const form = input.form;
-  const preview = form.querySelector('[data-photo-preview]');
+function syncPhotoFields(form) {
+  const selected = form.querySelector('[data-selected-photo]');
   const currentPhoto = form.querySelector('[data-current-photo]');
-  const picker = form.elements.image_file;
-  const removal = form.elements.remove_image;
+  const hasSelection = !selected.hidden;
+  if (currentPhoto) currentPhoto.hidden = hasSelection || form.elements.remove_image.value === 'true';
+  const hasPhoto = hasSelection || Boolean(currentPhoto && !currentPhoto.hidden);
+  form.querySelector('[data-photo-preview]').hidden = !hasPhoto;
+  form.querySelector('[data-photo-accessibility]').hidden = !hasPhoto;
+  form.querySelector('[data-photo-label]').textContent = tr(hasPhoto ? 'replacePhoto' : 'addPhoto');
+  const caption = tr(hasPhoto ? 'photoCaption' : 'composerPlaceholder');
+  form.elements.content.placeholder = caption;
+  form.elements.content.setAttribute('aria-label', caption);
+}
 
-  if (input === removal && removal.checked) picker.value = '';
-  if (input === picker && picker.files.length && removal) removal.checked = false;
-  preview.replaceChildren();
-  if (currentPhoto) currentPhoto.hidden = Boolean(removal.checked);
+async function updatePhotoPreview(picker) {
+  const form = picker.form;
+  const selected = form.querySelector('[data-selected-photo]');
+  selected.hidden = true;
+  selected.removeAttribute('src');
+  syncPhotoFields(form);
 
   const file = picker.files[0];
   if (!file) return;
   try {
     const data = await imageFileData(file);
     if (picker.files[0] !== file) return;
-    const image = document.createElement('img');
-    image.className = 'post-image';
-    image.alt = '';
-    image.src = data;
-    preview.append(image);
-    if (currentPhoto) currentPhoto.hidden = true;
+    selected.src = data;
+    selected.hidden = false;
+    syncPhotoFields(form);
   } catch (error) {
     if (picker.files[0] !== file) return;
     picker.value = '';
@@ -513,7 +541,7 @@ function updateTranslationSelection(select) {
 }
 
 app.addEventListener('change', event => {
-  if (event.target.matches('input[name="image_file"], input[name="remove_image"]')) {
+  if (event.target.matches('input[name="image_file"]')) {
     updatePhotoPreview(event.target);
     return;
   }
@@ -534,6 +562,20 @@ app.addEventListener('change', event => {
   render();
 });
 app.addEventListener('click', async event => {
+  const photoButton = event.target.closest('[data-photo-picker], [data-photo-remove]');
+  if (photoButton) {
+    const form = photoButton.form;
+    const picker = form.elements.image_file;
+    if (photoButton.matches('[data-photo-picker]')) {
+      picker.click();
+    } else {
+      if (!picker.files.length) form.elements.remove_image.value = 'true';
+      picker.value = '';
+      updatePhotoPreview(picker);
+      form.querySelector('[data-photo-picker]').focus();
+    }
+    return;
+  }
   const routeElement = event.target.closest('[data-route]');
   if (routeElement) {
     event.preventDefault();
@@ -626,7 +668,7 @@ app.addEventListener('submit', async event => {
       const description = values.get('image_alt');
       const imageData = await imageFileData(values.get('image_file'));
       if (imageData) update.image_data = imageData;
-      if (values.has('remove_image')) update.remove_image = true;
+      else if (values.get('remove_image') === 'true') update.remove_image = true;
       if (imageData || description !== form.elements.image_alt.defaultValue) update.image_alt = description;
       await api(`posts/${id}`, { method: 'PUT', body: JSON.stringify(update) });
       state.editingPostId = null; await refresh(); toast(tr('postUpdated'));

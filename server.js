@@ -47,6 +47,47 @@ function toPostgresSql(statement) {
   return text.replace(/\?/g, () => `$${++index}`);
 }
 
+function migrateSqlitePosts(schema) {
+  const postSchema = () => db.prepare("SELECT sql FROM sqlite_schema WHERE type='table' AND name='posts'").get().sql;
+  if (postSchema().includes('posts_content_or_photo')) return;
+  // Keep dependent comments, likes, and bookmarks when replacing the posts table.
+  db.exec('PRAGMA foreign_keys = OFF');
+  try {
+    db.exec('BEGIN IMMEDIATE');
+    if (!postSchema().includes('posts_content_or_photo')) {
+      const columns = db.prepare('PRAGMA table_info(posts)').all().map(column => column.name);
+      const sequence = db.prepare("SELECT seq FROM sqlite_sequence WHERE name='posts'").get();
+      const imageData = columns.includes('image_data') ? 'image_data' : "''";
+      const imageAlt = columns.includes('image_alt') ? 'image_alt' : "''";
+      db.exec(`
+        CREATE TABLE posts_new (
+          post_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+          content TEXT NOT NULL,
+          image_data TEXT NOT NULL DEFAULT '',
+          image_alt TEXT NOT NULL DEFAULT '' CHECK(length(image_alt) <= 200),
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          CONSTRAINT posts_content_or_photo CHECK(length(content) <= 2000 AND (content <> '' OR image_data <> ''))
+        );
+        INSERT INTO posts_new(post_id,user_id,content,image_data,image_alt,created_at,updated_at)
+          SELECT post_id,user_id,content,${imageData},${imageAlt},created_at,updated_at FROM posts;
+        DROP TABLE posts;
+        ALTER TABLE posts_new RENAME TO posts;
+      `);
+      if (sequence) db.prepare("UPDATE sqlite_sequence SET seq=MAX(seq,?) WHERE name='posts'").run(sequence.seq);
+      db.exec(schema);
+      if (db.prepare('PRAGMA foreign_key_check').get()) throw new Error('Post migration failed its foreign key check.');
+    }
+    db.exec('COMMIT');
+  } catch (error) {
+    if (db.isTransaction) db.exec('ROLLBACK');
+    throw error;
+  } finally {
+    db.exec('PRAGMA foreign_keys = ON');
+  }
+}
+
 async function ensureSchema() {
   if (!schemaPromise) {
     schemaPromise = (async () => {
@@ -55,24 +96,27 @@ async function ensureSchema() {
         for (const statement of schema.split(';').map((part) => part.trim()).filter(Boolean)) {
           await sql.query(statement, []);
         }
-        await sql.query(`ALTER TABLE posts
-          ADD COLUMN IF NOT EXISTS image_data TEXT NOT NULL DEFAULT '',
-          ADD COLUMN IF NOT EXISTS image_alt TEXT NOT NULL DEFAULT '' CHECK(length(image_alt) <= 200)`, []);
+        await sql.query(`DO $$
+          BEGIN
+            IF EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='posts'::regclass AND conname='posts_content_or_photo') THEN
+              RETURN;
+            END IF;
+            LOCK TABLE posts IN ACCESS EXCLUSIVE MODE;
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='posts'::regclass AND conname='posts_content_or_photo') THEN
+              ALTER TABLE posts
+                ADD COLUMN IF NOT EXISTS image_data TEXT NOT NULL DEFAULT '',
+                ADD COLUMN IF NOT EXISTS image_alt TEXT NOT NULL DEFAULT '' CHECK(length(image_alt) <= 200),
+                DROP CONSTRAINT IF EXISTS posts_content_check,
+                ADD CONSTRAINT posts_content_or_photo CHECK(length(content) <= 2000 AND (content <> '' OR image_data <> ''));
+            END IF;
+          END $$`, []);
         await sql.query('UPDATE users SET role=\'admin\' WHERE role<>\'admin\'', []);
         await sql.query(toPostgresSql('INSERT OR IGNORE INTO app_settings(setting_key,setting_value) VALUES(?,?)'), ['max_users', String(MAX_USERS)]);
       } else {
         db.exec('PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL;');
-        db.exec(fs.readFileSync(path.join(ROOT, 'database', 'schema.sql'), 'utf8'));
-        db.exec('BEGIN IMMEDIATE');
-        try {
-          const postColumns = db.prepare('PRAGMA table_info(posts)').all().map(column => column.name);
-          if (!postColumns.includes('image_data')) db.exec("ALTER TABLE posts ADD COLUMN image_data TEXT NOT NULL DEFAULT ''");
-          if (!postColumns.includes('image_alt')) db.exec("ALTER TABLE posts ADD COLUMN image_alt TEXT NOT NULL DEFAULT '' CHECK(length(image_alt) <= 200)");
-          db.exec('COMMIT');
-        } catch (error) {
-          db.exec('ROLLBACK');
-          throw error;
-        }
+        const schema = fs.readFileSync(path.join(ROOT, 'database', 'schema.sql'), 'utf8');
+        db.exec(schema);
+        migrateSqlitePosts(schema);
         db.prepare("UPDATE users SET role='admin' WHERE role<>'admin'").run();
         db.prepare('INSERT OR IGNORE INTO app_settings(setting_key,setting_value) VALUES(?,?)').run('max_users', String(MAX_USERS));
       }
@@ -357,6 +401,7 @@ async function api(req, res, url) {
     if (!Number.isInteger(postId) || postId < 1) fail(400, 'Choose a valid post.');
     const post = await one('SELECT content FROM posts WHERE post_id=?', postId);
     if (!post) fail(404, 'Post not found.');
+    if (!post.content) fail(400, 'This post has no text to translate.');
     const languages = ['en', 'kk', 'ru'];
     if (!languages.includes(b.source) || !languages.includes(b.target)) fail(400, 'Choose English, Kazakh, or Russian for translation.');
     if (b.source === b.target) fail(400, 'Choose a post language different from your interface language.');
@@ -473,8 +518,8 @@ async function api(req, res, url) {
 
   if (method === 'POST' && route === 'posts') {
     const b = await body(req, { allowPostImage: true });
-    const content = validatePostContent(b.content);
     const imageData = validatePostImage(b.image_data);
+    const content = validatePostContent(b.content, Boolean(imageData));
     const imageAlt = imageData ? text(b.image_alt, 'Photo description', 200, { optional: true }) : '';
     const now = new Date().toISOString();
     const inserted = await one(`INSERT INTO posts(user_id,content,image_data,image_alt,created_at,updated_at)
@@ -501,21 +546,23 @@ async function api(req, res, url) {
 
   if (/^posts\/\d+$/.test(route) && method === 'PUT') {
     const id = Number(parts[1]);
-    const post = await one('SELECT user_id,created_at,updated_at FROM posts WHERE post_id=?', id);
+    const post = await one("SELECT user_id,created_at,updated_at,(image_data <> '') AS has_image FROM posts WHERE post_id=?", id);
     requirePostOwner(post, me.user_id, 'edit');
     const b = await body(req, { allowPostImage: true });
-    const content = validatePostContent(b.content);
+    const changesPhoto = Object.hasOwn(b, 'image_data') || b.remove_image === true;
+    const imageData = changesPhoto ? validatePostImage(b.image_data) : null;
+    const content = validatePostContent(b.content, changesPhoto ? Boolean(imageData) : Boolean(post.has_image));
     const previousTime = Date.parse(post.updated_at || post.created_at);
     const updatedAt = new Date(Math.max(Date.now(), previousTime + 1)).toISOString();
-    if (Object.hasOwn(b, 'image_data') || b.remove_image === true) {
-      const imageData = validatePostImage(b.image_data);
+    if (changesPhoto) {
       const imageAlt = imageData ? text(b.image_alt, 'Photo description', 200, { optional: true }) : '';
       await run('UPDATE posts SET content=?,image_data=?,image_alt=?,updated_at=? WHERE post_id=?', content, imageData, imageAlt, updatedAt, id);
-    } else if (Object.hasOwn(b, 'image_alt')) {
-      const imageAlt = text(b.image_alt, 'Photo description', 200, { optional: true });
-      await run(`UPDATE posts SET content=?,image_alt=CASE WHEN image_data <> '' THEN ? ELSE '' END,updated_at=? WHERE post_id=?`, content, imageAlt, updatedAt, id);
     } else {
-      await run('UPDATE posts SET content=?,updated_at=? WHERE post_id=?', content, updatedAt, id);
+      const imageAlt = Object.hasOwn(b, 'image_alt') ? text(b.image_alt, 'Photo description', 200, { optional: true }) : null;
+      const updated = await one(`UPDATE posts SET content=?,
+        image_alt=CASE WHEN image_data <> '' THEN COALESCE(?,image_alt) ELSE '' END,updated_at=?
+        WHERE post_id=? AND (? <> '' OR image_data <> '') RETURNING post_id`, content, imageAlt, updatedAt, id, content);
+      if (!updated) fail(409, 'The post changed. Reopen it and try again.');
     }
     return json(res, 200, { post_id: id, content, updated_at: updatedAt });
   }

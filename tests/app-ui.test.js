@@ -42,6 +42,8 @@ test('post photos include escaped descriptions and owner-only editing controls',
   context.state.editingPostId = 91;
   const edit = context.renderPostCard(withPhoto);
   assert.match(edit, /name="image_file" accept="image\/png,image\/jpeg,image\/webp"/);
+  assert.match(edit, /class="button secondary small" data-photo-picker/);
+  assert.match(edit, /placeholder="Write a caption \(optional\)…"/);
   assert.match(edit, /name="image_alt" maxlength="200" value="Casey’s &quot;campus&quot; photo"/);
   assert.match(edit, /name="remove_image"/);
 
@@ -50,6 +52,8 @@ test('post photos include escaped descriptions and owner-only editing controls',
   assert.match(view, /src="\/api\/posts\/91\/image\?v=/);
   assert.match(view, /alt="Casey’s &quot;campus&quot; photo"/);
   assert.doesNotMatch(view, /name="image_file"|name="remove_image"/);
+  const photoOnly = context.renderPostCard({ ...withPhoto, content: '' });
+  assert.doesNotMatch(photoOnly, /class="post-content"|class="translate-tools"/);
   context.state.editingPostId = null;
 });
 

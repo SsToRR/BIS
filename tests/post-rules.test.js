@@ -25,11 +25,14 @@ test('post content is trimmed and accepts the 1- and 2000-character boundaries',
   assert.equal(validatePostContent('x'.repeat(2000)).length, 2000);
 });
 
-test('blank and over-limit post content are rejected with 400', () => {
-  for (const content of ['   ', 'x'.repeat(2001)]) {
-    assert.throws(
-      () => validatePostContent(content),
-      error => error.status === 400 && error.message === 'Post must be between 1 and 2000 characters.'
-    );
-  }
+test('photos allow a blank caption and the text limit still applies', () => {
+  assert.equal(validatePostContent('   ', true), '');
+  assert.throws(
+    () => validatePostContent('   '),
+    error => error.status === 400 && error.message === 'Write a post or add a photo.'
+  );
+  assert.throws(
+    () => validatePostContent('x'.repeat(2001), true),
+    error => error.status === 400 && error.message === 'Post text must be 2000 characters or fewer.'
+  );
 });
