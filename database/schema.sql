@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS posts (
   post_id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
   content TEXT NOT NULL CHECK(length(content) BETWEEN 1 AND 2000),
+  image_data TEXT NOT NULL DEFAULT '',
+  image_alt TEXT NOT NULL DEFAULT '' CHECK(length(image_alt) <= 200),
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

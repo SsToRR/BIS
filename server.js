@@ -15,6 +15,11 @@ const positiveSetting = (value, fallback, max) => {
 };
 const SESSION_DAYS = positiveSetting(process.env.SESSION_DAYS, 30, 365);
 const MAX_USERS = positiveSetting(process.env.MAX_USERS, 500, 1000000);
+const MAX_BODY_LENGTH = 20_000;
+const MAX_POST_IMAGE_BYTES = 1_400_000;
+const MAX_POST_BODY_LENGTH = 2_000_000;
+const POST_IMAGE_PATTERN = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/]+={0,2})$/;
+const POST_IMAGE_TYPE_ERROR = 'Choose a PNG, JPEG, or WebP image.';
 const usePostgres = Boolean(DATABASE_URL);
 if (process.env.VERCEL === '1' && !usePostgres) {
   throw new Error('DATABASE_URL must be configured for Vercel deployments.');
@@ -50,11 +55,24 @@ async function ensureSchema() {
         for (const statement of schema.split(';').map((part) => part.trim()).filter(Boolean)) {
           await sql.query(statement, []);
         }
+        await sql.query(`ALTER TABLE posts
+          ADD COLUMN IF NOT EXISTS image_data TEXT NOT NULL DEFAULT '',
+          ADD COLUMN IF NOT EXISTS image_alt TEXT NOT NULL DEFAULT '' CHECK(length(image_alt) <= 200)`, []);
         await sql.query('UPDATE users SET role=\'admin\' WHERE role<>\'admin\'', []);
         await sql.query(toPostgresSql('INSERT OR IGNORE INTO app_settings(setting_key,setting_value) VALUES(?,?)'), ['max_users', String(MAX_USERS)]);
       } else {
-        db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
+        db.exec('PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL;');
         db.exec(fs.readFileSync(path.join(ROOT, 'database', 'schema.sql'), 'utf8'));
+        db.exec('BEGIN IMMEDIATE');
+        try {
+          const postColumns = db.prepare('PRAGMA table_info(posts)').all().map(column => column.name);
+          if (!postColumns.includes('image_data')) db.exec("ALTER TABLE posts ADD COLUMN image_data TEXT NOT NULL DEFAULT ''");
+          if (!postColumns.includes('image_alt')) db.exec("ALTER TABLE posts ADD COLUMN image_alt TEXT NOT NULL DEFAULT '' CHECK(length(image_alt) <= 200)");
+          db.exec('COMMIT');
+        } catch (error) {
+          db.exec('ROLLBACK');
+          throw error;
+        }
         db.prepare("UPDATE users SET role='admin' WHERE role<>'admin'").run();
         db.prepare('INSERT OR IGNORE INTO app_settings(setting_key,setting_value) VALUES(?,?)').run('max_users', String(MAX_USERS));
       }
@@ -104,21 +122,30 @@ const json = (res, status, value) => {
 function fail(status, message) { const error = new Error(message); error.status = status; throw error; }
 function parseCookies(header = '') { return Object.fromEntries(header.split(';').map((value) => value.trim().split('=').map(decodeURIComponent)).filter((value) => value.length === 2)); }
 
-async function body(req) {
-  if (req.body !== undefined && req.body !== null) {
-    const parsed = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : req.body;
-    const raw = typeof parsed === 'string' ? parsed : JSON.stringify(parsed);
-    if (raw.length > 20_000) fail(413, 'Request is too large.');
-    if (typeof parsed !== 'string') return parsed && typeof parsed === 'object' ? parsed : {};
-    try { return raw ? JSON.parse(raw) : {}; } catch { fail(400, 'Please send valid JSON.'); }
-  }
-
+async function body(req, { allowPostImage = false } = {}) {
+  const mediaType = req.headers['content-type']?.split(';')[0].trim().toLowerCase();
+  const maxLength = allowPostImage && mediaType === 'application/json' ? MAX_POST_BODY_LENGTH : MAX_BODY_LENGTH;
+  let parsed = req.body;
+  if (Buffer.isBuffer(parsed)) parsed = parsed.toString('utf8');
   let raw = '';
-  for await (const part of req) {
-    raw += part;
-    if (raw.length > 20_000) fail(413, 'Request is too large.');
+  if (parsed != null) {
+    raw = typeof parsed === 'string' ? parsed : JSON.stringify(parsed);
+    if (raw.length > maxLength) fail(413, 'Request is too large.');
+  } else {
+    req.setEncoding?.('utf8');
+    for await (const part of req) {
+      raw += part;
+      if (raw.length > maxLength) fail(413, 'Request is too large.');
+    }
   }
-  try { return raw ? JSON.parse(raw) : {}; } catch { fail(400, 'Please send valid JSON.'); }
+  try {
+    if (parsed == null || typeof parsed === 'string') parsed = raw ? JSON.parse(raw) : {};
+  } catch {
+    if (raw.length > MAX_BODY_LENGTH) fail(413, 'Request is too large.');
+    fail(400, 'Please send valid JSON.');
+  }
+  if (raw.length > MAX_BODY_LENGTH && !parsed?.image_data) fail(413, 'Request is too large.');
+  return parsed && typeof parsed === 'object' ? parsed : {};
 }
 
 async function currentUser(req) {
@@ -139,6 +166,23 @@ function text(value, field, max, { optional = false } = {}) {
   if (!result && optional) return '';
   if (!result || result.length > max) fail(400, `${field} must be between 1 and ${max} characters.`);
   return result;
+}
+
+function validatePostImage(value) {
+  if (value == null || value === '') return '';
+  if (typeof value !== 'string') fail(400, POST_IMAGE_TYPE_ERROR);
+  const sizeError = 'Photo must be 1.4 MB or smaller.';
+  const match = POST_IMAGE_PATTERN.exec(value);
+  if (!match || match[0] !== value) fail(400, POST_IMAGE_TYPE_ERROR);
+  const [, type, encoded] = match;
+  const bytes = Buffer.from(encoded, 'base64');
+  if (bytes.length > MAX_POST_IMAGE_BYTES) fail(413, sizeError);
+  if (bytes.toString('base64') !== encoded) fail(400, POST_IMAGE_TYPE_ERROR);
+  const isPng = type === 'image/png' && bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+  const isJpeg = type === 'image/jpeg' && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  const isWebp = type === 'image/webp' && bytes.toString('latin1', 0, 4) === 'RIFF' && bytes.toString('latin1', 8, 12) === 'WEBP';
+  if (!isPng && !isJpeg && !isWebp) fail(400, 'The selected file does not match its image type.');
+  return value;
 }
 
 async function currentMaxUsers() {
@@ -235,6 +279,7 @@ async function postShape(row, viewerId) {
     ...row,
     post_id: Number(row.post_id),
     user_id: Number(row.user_id),
+    has_image: Boolean(row.has_image),
     like_count: Number(row.like_count),
     comment_count: Number(row.comment_count),
     liked_by_me: !!liked,
@@ -397,6 +442,7 @@ async function api(req, res, url) {
 
   if (method === 'GET' && route === 'feed') {
     const rows = await q(`SELECT p.post_id,p.user_id,p.content,p.created_at,p.updated_at,u.full_name,u.major,
+      (p.image_data <> '') AS has_image,p.image_alt,
       (SELECT COUNT(*) FROM likes l WHERE l.post_id=p.post_id) AS like_count,
       (SELECT COUNT(*) FROM comments c WHERE c.post_id=p.post_id) AS comment_count
       FROM posts p JOIN users u USING(user_id)
@@ -407,6 +453,7 @@ async function api(req, res, url) {
 
   if (method === 'GET' && route === 'bookmarks') {
     const rows = await q(`SELECT p.post_id,p.user_id,p.content,p.created_at,p.updated_at,u.full_name,u.major,
+      (p.image_data <> '') AS has_image,p.image_alt,
       b.created_at AS saved_at,
       (SELECT COUNT(*) FROM likes l WHERE l.post_id=p.post_id) AS like_count,
       (SELECT COUNT(*) FROM comments c WHERE c.post_id=p.post_id) AS comment_count
@@ -417,6 +464,7 @@ async function api(req, res, url) {
 
   if (method === 'GET' && route === 'posts') {
     const rows = await q(`SELECT p.post_id,p.user_id,p.content,p.created_at,p.updated_at,u.full_name,u.major,
+      (p.image_data <> '') AS has_image,p.image_alt,
       (SELECT COUNT(*) FROM likes l WHERE l.post_id=p.post_id) AS like_count,
       (SELECT COUNT(*) FROM comments c WHERE c.post_id=p.post_id) AS comment_count
       FROM posts p JOIN users u USING(user_id) ORDER BY p.created_at DESC LIMIT 60`);
@@ -424,21 +472,51 @@ async function api(req, res, url) {
   }
 
   if (method === 'POST' && route === 'posts') {
-    const b = await body(req);
+    const b = await body(req, { allowPostImage: true });
     const content = validatePostContent(b.content);
-    const inserted = await one('INSERT INTO posts(user_id,content,created_at,updated_at) VALUES(?,?,?,?) RETURNING post_id', me.user_id, content, new Date().toISOString(), new Date().toISOString());
+    const imageData = validatePostImage(b.image_data);
+    const imageAlt = imageData ? text(b.image_alt, 'Photo description', 200, { optional: true }) : '';
+    const now = new Date().toISOString();
+    const inserted = await one(`INSERT INTO posts(user_id,content,image_data,image_alt,created_at,updated_at)
+      VALUES(?,?,?,?,?,?) RETURNING post_id`, me.user_id, content, imageData, imageAlt, now, now);
     return json(res, 201, { post_id: Number(inserted.post_id) });
+  }
+
+  if (/^posts\/\d+\/image$/.test(route) && method === 'GET') {
+    const post = await one('SELECT image_data FROM posts WHERE post_id=?', Number(parts[1]));
+    const match = POST_IMAGE_PATTERN.exec(post?.image_data || '');
+    if (!match) fail(404, 'Post photo not found.');
+    const image = Buffer.from(match[2], 'base64');
+    res.setHeader('Content-Type', match[1]);
+    res.setHeader('Content-Length', image.length);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    if (typeof res.writeHead === 'function') {
+      res.writeHead(200);
+      res.end(image);
+      return;
+    }
+    return res.status(200).send(image);
   }
 
   if (/^posts\/\d+$/.test(route) && method === 'PUT') {
     const id = Number(parts[1]);
     const post = await one('SELECT user_id,created_at,updated_at FROM posts WHERE post_id=?', id);
     requirePostOwner(post, me.user_id, 'edit');
-    const b = await body(req);
+    const b = await body(req, { allowPostImage: true });
     const content = validatePostContent(b.content);
     const previousTime = Date.parse(post.updated_at || post.created_at);
     const updatedAt = new Date(Math.max(Date.now(), previousTime + 1)).toISOString();
-    await run('UPDATE posts SET content=?, updated_at=? WHERE post_id=?', content, updatedAt, id);
+    if (Object.hasOwn(b, 'image_data') || b.remove_image === true) {
+      const imageData = validatePostImage(b.image_data);
+      const imageAlt = imageData ? text(b.image_alt, 'Photo description', 200, { optional: true }) : '';
+      await run('UPDATE posts SET content=?,image_data=?,image_alt=?,updated_at=? WHERE post_id=?', content, imageData, imageAlt, updatedAt, id);
+    } else if (Object.hasOwn(b, 'image_alt')) {
+      const imageAlt = text(b.image_alt, 'Photo description', 200, { optional: true });
+      await run(`UPDATE posts SET content=?,image_alt=CASE WHEN image_data <> '' THEN ? ELSE '' END,updated_at=? WHERE post_id=?`, content, imageAlt, updatedAt, id);
+    } else {
+      await run('UPDATE posts SET content=?,updated_at=? WHERE post_id=?', content, updatedAt, id);
+    }
     return json(res, 200, { post_id: id, content, updated_at: updatedAt });
   }
 
@@ -486,6 +564,7 @@ async function api(req, res, url) {
     const user = await one('SELECT user_id,full_name,major,faculty,bio,created_at FROM users WHERE user_id=?', id);
     if (!user) fail(404, 'Student not found.');
     const rows = await q(`SELECT p.post_id,p.user_id,p.content,p.created_at,p.updated_at,u.full_name,u.major,
+      (p.image_data <> '') AS has_image,p.image_alt,
       (SELECT COUNT(*) FROM likes l WHERE l.post_id=p.post_id) AS like_count,
       (SELECT COUNT(*) FROM comments c WHERE c.post_id=p.post_id) AS comment_count
       FROM posts p JOIN users u USING(user_id) WHERE p.user_id=? ORDER BY p.created_at DESC LIMIT 30`, id);

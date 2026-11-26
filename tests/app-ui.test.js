@@ -5,18 +5,15 @@ const vm = require('node:vm');
 const path = require('node:path');
 
 const appSource = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
-const start = appSource.indexOf('function postCard(p){');
-const end = appSource.indexOf('\nfunction empty(', start);
-assert.ok(start >= 0 && end > start, 'postCard renderer should be present');
-const cardRenderer = appSource.slice(start, end);
+const init = appSource.lastIndexOf('\ninit();');
+assert.ok(init > 0, 'App initialization should follow the renderers');
+const ui = { addEventListener() {} };
 const context = {
-  state: { user: { user_id: 11 }, editingPostId: null },
-  esc: value => String(value ?? ''),
-  date: () => 'Just now',
-  avatar: () => '<div class="avatar">CM</div>'
+  document: { querySelector: () => ui },
+  window: ui,
 };
 vm.createContext(context);
-vm.runInContext(`${cardRenderer}\nglobalThis.renderPostCard = postCard;`, context);
+vm.runInContext(`${appSource.slice(0, init)}\nObject.assign(globalThis, { renderPostCard: postCard, state });`, context);
 
 const post = {
   post_id: 91,
@@ -33,9 +30,27 @@ const post = {
 };
 
 test('the author sees edit and delete controls on their post', () => {
+  context.state.user = { user_id: 11 };
   const html = context.renderPostCard(post);
   assert.match(html, /data-action="edit-post"/);
   assert.match(html, /data-action="delete-post"/);
+});
+
+test('post photos include escaped descriptions and owner-only editing controls', () => {
+  const withPhoto = { ...post, has_image: true, image_alt: 'Casey’s "campus" photo' };
+  context.state.user = { user_id: 11 };
+  context.state.editingPostId = 91;
+  const edit = context.renderPostCard(withPhoto);
+  assert.match(edit, /name="image_file" accept="image\/png,image\/jpeg,image\/webp"/);
+  assert.match(edit, /name="image_alt" maxlength="200" value="Casey’s &quot;campus&quot; photo"/);
+  assert.match(edit, /name="remove_image"/);
+
+  context.state.user = { user_id: 12 };
+  const view = context.renderPostCard(withPhoto);
+  assert.match(view, /src="\/api\/posts\/91\/image\?v=/);
+  assert.match(view, /alt="Casey’s &quot;campus&quot; photo"/);
+  assert.doesNotMatch(view, /name="image_file"|name="remove_image"/);
+  context.state.editingPostId = null;
 });
 
 test('another student does not see edit or delete controls', () => {

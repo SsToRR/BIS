@@ -1,8 +1,14 @@
 const app = document.querySelector('#app');
 const localeNames = { en: 'English', kk: 'Қазақша', ru: 'Русский' };
 const supportedLanguages = ['en', 'kk', 'ru'];
+const postPhotoTypes = ['image/png', 'image/jpeg', 'image/webp'];
+const maxPostPhotoBytes = 1_400_000;
 const messages = {
   en: {
+    addPhoto: 'Add photo', replacePhoto: 'Replace photo', removePhoto: 'Remove photo',
+    photoDescription: 'Photo description for screen readers', postPhoto: 'Photo shared by {name}',
+    photoType: 'Choose a PNG, JPEG, or WebP image.', photoTooLarge: 'Photo must be 1.4 MB or smaller.',
+    photoDescriptionTooLong: 'Photo description must be 200 characters or fewer.',
     brandSub: 'student community', student: 'Student', language: 'Language', home: 'Home feed', discover: 'Find students', follow: 'Follow', savedNav: 'Saved posts', connections: 'Connections', profile: 'My profile', logout: 'Log out', campus: 'YOUR CAMPUS', account: 'ACCOUNT', authKicker: 'CAMPUS COMMUNITY',
     communityEyebrow: 'YOUR CAMPUS COMMUNITY', welcome: 'Hey, {name} 👋', welcomeBody: 'A little hello can turn into a new study buddy. See what your campus is sharing.', network: 'Your network', following: 'Following', followers: 'Followers', peopleKnow: 'People to know', about: 'About Campus', aboutBody: 'A friendly space to share ideas, ask questions, and connect with students across your university.',
     feedTitle: 'Home feed', feedSubtitle: 'Good things happen when students share.', composerPlaceholder: 'What’s happening on campus?', composerHint: 'Share a thought, question, or win ✨', share: 'Share post', like: 'Like', liked: 'Liked', comment: 'Comment', save: 'Save', saved: 'Saved', likes: 'likes', comments: 'comments', commentPlaceholder: 'Write a kind comment…', send: 'Send', edit: 'Edit post', remove: 'Delete post', cancel: 'Cancel', saveChanges: 'Save changes', edited: 'edited', deleteConfirm: 'Delete this post? Its comments and likes will also be removed.',
@@ -24,6 +30,10 @@ const messages = {
     adminTitle: 'Campus capacity', adminSubtitle: 'Set the maximum number of student accounts allowed to register.', accountCapacity: 'Maximum student accounts', currentStudents: '{count} student accounts are registered.', saveCapacity: 'Save capacity', capacitySaved: 'Campus capacity updated.',
   },
   kk: {
+    addPhoto: 'Фото қосу', replacePhoto: 'Фотоны ауыстыру', removePhoto: 'Фотоны өшіру',
+    photoDescription: 'Экраннан оқу бағдарламасына арналған фото сипаттамасы', postPhoto: '{name} бөліскен фото',
+    photoType: 'PNG, JPEG немесе WebP пішіміндегі суретті таңдаңыз.', photoTooLarge: 'Фотоның өлшемі 1,4 МБ-тан аспауы керек.',
+    photoDescriptionTooLong: 'Фото сипаттамасы 200 таңбадан аспауы керек.',
     brandSub: 'студенттер қауымдастығы', student: 'Студент', language: 'Тіл', home: 'Жаңалықтар', discover: 'Студенттерді табу', follow: 'Жазылу', savedNav: 'Сақталған жазбалар', connections: 'Байланыстар', profile: 'Профилім', logout: 'Шығу', campus: 'СІЗДІҢ КАМПУСЫҢЫЗ', account: 'АККАУНТ', authKicker: 'КАМПУС ҚАУЫМДАСТЫҒЫ',
     communityEyebrow: 'КАМПУС ҚАУЫМДАСТЫҒЫ', welcome: 'Сәлем, {name} 👋', welcomeBody: 'Бір сәлем жаңа оқу досын табуға себеп болуы мүмкін. Кампустағы жаңалықтарды көріңіз.', network: 'Сіздің желіңіз', following: 'Жазылғандар', followers: 'Жазылушылар', peopleKnow: 'Танысуға болатындар', about: 'Campus туралы', aboutBody: 'Идея бөлісуге, сұрақ қоюға және университет студенттерімен байланысуға арналған ашық орта.',
     feedTitle: 'Жаңалықтар таспасы', feedSubtitle: 'Студенттер бөліскенде жақсы нәрселер болады.', composerPlaceholder: 'Кампус жаңалықтары қандай?', composerHint: 'Ойыңызбен, сұрағыңызбен не жетістігіңізбен бөлісіңіз ✨', share: 'Жариялау', like: 'Ұнату', liked: 'Ұнатылды', comment: 'Пікір', save: 'Сақтау', saved: 'Сақталды', likes: 'ұнату', comments: 'пікір', commentPlaceholder: 'Жылы пікір қалдырыңыз…', send: 'Жіберу', edit: 'Жазбаны өңдеу', remove: 'Жазбаны жою', cancel: 'Болдырмау', saveChanges: 'Сақтау', edited: 'өңделді', deleteConfirm: 'Бұл жазба жойылсын ба? Оның пікірлері мен ұнатулары да жойылады.',
@@ -38,6 +48,10 @@ const messages = {
     errorGeneric: 'Қате пайда болды. Қайталап көріңіз.', errorLogin: 'Жалғастыру үшін жүйеге кіріңіз.', errorEmail: 'Жарамды электрондық пошта енгізіңіз.', errorPassword: 'Кемінде 8 таңбадан тұратын құпиясөз қолданыңыз.', errorDuplicate: 'Бұл пошта бұрын тіркелген.', errorCredentials: 'Пошта немесе құпиясөз қате.', errorPost: 'Жазба 1–2000 таңба аралығында болуы керек.', errorComment: 'Пікір 1–500 таңба аралығында болуы керек.', errorNotFound: 'Жазба табылмады.', errorOwnerEdit: 'Тек өз жазбаңызды өңдей аласыз.', errorOwnerDelete: 'Тек өз жазбаңызды жоя аласыз.', errorCapacity: 'Кампус {count} студенттік аккаунт шегіне жетті.', errorAccount: 'Аты-жөні, мамандығы және міндетті өрістерді толтырыңыз.',
   },
   ru: {
+    addPhoto: 'Добавить фото', replacePhoto: 'Заменить фото', removePhoto: 'Удалить фото',
+    photoDescription: 'Описание фото для экранного диктора', postPhoto: 'Фото в публикации пользователя {name}',
+    photoType: 'Выберите изображение в формате PNG, JPEG или WebP.', photoTooLarge: 'Размер фото не должен превышать 1,4 МБ.',
+    photoDescriptionTooLong: 'Описание фото должно содержать не более 200 символов.',
     brandSub: 'студенческое сообщество', student: 'Студент', language: 'Язык', home: 'Лента', discover: 'Найти студентов', follow: 'Подписаться', savedNav: 'Сохранённые посты', connections: 'Контакты', profile: 'Мой профиль', logout: 'Выйти', campus: 'ВАШ КАМПУС', account: 'АККАУНТ', authKicker: 'КАМПУСНОЕ СООБЩЕСТВО',
     communityEyebrow: 'КАМПУСНОЕ СООБЩЕСТВО', welcome: 'Привет, {name} 👋', welcomeBody: 'Обычное приветствие может привести к новой дружбе. Посмотрите, чем делятся студенты.', network: 'Ваша сеть', following: 'Вы подписаны', followers: 'Подписчики', peopleKnow: 'Познакомьтесь', about: 'О Campus', aboutBody: 'Пространство, где можно делиться идеями, задавать вопросы и общаться со студентами университета.',
     feedTitle: 'Лента', feedSubtitle: 'Когда студенты делятся, происходит хорошее.', composerPlaceholder: 'Что нового в кампусе?', composerHint: 'Поделитесь мыслью, вопросом или успехом ✨', share: 'Опубликовать', like: 'Нравится', liked: 'Понравилось', comment: 'Комментировать', save: 'Сохранить', saved: 'Сохранено', likes: 'нравится', comments: 'комментариев', commentPlaceholder: 'Оставьте добрый комментарий…', send: 'Отправить', edit: 'Изменить пост', remove: 'Удалить пост', cancel: 'Отмена', saveChanges: 'Сохранить', edited: 'изменено', deleteConfirm: 'Удалить этот пост? Комментарии и отметки «Нравится» тоже будут удалены.',
@@ -208,6 +222,9 @@ function localizeServerError(message) {
     'The translation service is unavailable. Please try again later.': 'translationFailed',
     'The translation service has reached its usage limit. Please try again later.': 'translationLimit',
     'Choose a post language different from your interface language.': 'translationSameLanguageError',
+    'Choose a PNG, JPEG, or WebP image.': 'photoType', 'The selected file does not match its image type.': 'photoType',
+    'Photo must be 1.4 MB or smaller.': 'photoTooLarge',
+    'Photo description must be between 1 and 200 characters.': 'photoDescriptionTooLong',
     'You can only edit your own posts.': 'errorOwnerEdit', 'You can only delete your own posts.': 'errorOwnerDelete',
     'Something went wrong. Please try again.': 'errorGeneric',
   };
@@ -285,9 +302,15 @@ function postCard(p){
   const cachedTranslation = state.translations?.[p.post_id];
   const translated = cachedTranslation && cachedTranslation.updatedAt === String(p.updated_at || '') ? cachedTranslation : null;
   const sourceLanguages = [['en', label('sourceEnglish')], ['kk', label('sourceKazakh')], ['ru', label('sourceRussian')]];
+  const photoAlt = p.has_image ? p.image_alt || tr('postPhoto', { name: p.full_name }) : '';
+  const photo = p.has_image ? `<img class="post-image" data-current-photo src="/api/posts/${p.post_id}/image?v=${encodeURIComponent(p.updated_at || '')}" alt="${esc(photoAlt)}"${editing ? '' : ' loading="lazy"'}>` : '';
   return `<article class="post-card" data-post="${p.post_id}" data-updated-at="${esc(p.updated_at || '')}">
     <div class="post-head">${avatar(p.full_name)}<div class="post-author-block"><div class="post-author"><a href="#profile/${p.user_id}" data-route="profile" data-id="${p.user_id}">${esc(p.full_name)}</a></div><div class="post-meta">${esc(p.major || state.i18n?.student || 'Student')} · ${date(p.created_at)}${wasEdited ? ` · ${label('edited')}` : ''}</div></div>${owner ? `<div class="post-owner-actions"><button class="icon-button" data-action="edit-post" data-id="${p.post_id}" title="${label('edit')}" aria-label="${label('edit')}">✎</button><button class="icon-button" data-action="delete-post" data-id="${p.post_id}" title="${label('remove')}" aria-label="${label('remove')}">×</button></div>` : ''}</div>
-    ${editing ? `<form class="edit-post-form" data-post="${p.post_id}"><textarea name="content" maxlength="2000" required aria-label="${label('edit')}">${esc(p.content)}</textarea><div class="edit-post-controls"><button class="button ghost small" type="button" data-action="cancel-edit-post">${label('cancel')}</button><button class="button small">${label('saveChanges')}</button></div></form>` : `<div class="post-content">${esc(p.content)}</div>`}
+    ${editing ? `<form class="edit-post-form" data-post="${p.post_id}">
+      <textarea name="content" maxlength="2000" required aria-label="${label('edit')}">${esc(p.content)}</textarea>
+      ${photo}${photoFields(p)}
+      <div class="edit-post-controls"><button class="button ghost small" type="button" data-action="cancel-edit-post">${label('cancel')}</button><button class="button small">${label('saveChanges')}</button></div>
+    </form>` : `<div class="post-content">${esc(p.content)}</div>${photo}`}
     ${translated ? `<section class="translated-post" lang="${esc(translated.target)}"><b>${esc(label('translationLabel').replace('{source}', translationLanguageName(translated.source)).replace('{target}', translationLanguageName(translated.target)))}</b><p>${esc(translated.text)}</p></section>` : ''}
     <div class="post-stats"><span>♡ ${likeCount} ${label('likes')}</span><span>◌ ${commentCount} ${label('comments')}</span></div>
     <div class="post-actions"><button class="action ${p.liked_by_me ? 'on' : ''}" data-action="like" data-id="${p.post_id}" aria-pressed="${Boolean(p.liked_by_me)}">${p.liked_by_me ? '♥' : '♡'} ${likedLabel}</button><button class="action" data-action="focus-comment" data-id="${p.post_id}">◌ ${label('comment')}</button><button class="action save-action ${p.saved_by_me ? 'on' : ''}" data-action="bookmark" data-id="${p.post_id}" aria-pressed="${Boolean(p.saved_by_me)}">${p.saved_by_me ? '▣' : '♧'} ${savedLabel}</button>
@@ -306,6 +329,13 @@ function postCard(p){
     <form class="comment-form" data-post="${p.post_id}"><input name="content" maxlength="500" placeholder="${label('commentPlaceholder')}" aria-label="${label('commentPlaceholder')}"><button class="button secondary small">${label('send')}</button></form>
   </article>`;
 }
+function photoFields(post = {}) {
+  return `<div class="post-photo-fields">
+    <label>${esc(tr(post.has_image ? 'replacePhoto' : 'addPhoto'))}<input type="file" name="image_file" accept="${postPhotoTypes.join(',')}"></label>
+    <label>${esc(tr('photoDescription'))}<input type="text" name="image_alt" maxlength="200" value="${esc(post.image_alt || '')}"></label>
+    ${post.has_image ? `<label class="post-photo-remove"><input type="checkbox" name="remove_image">${esc(tr('removePhoto'))}</label>` : ''}
+  </div><div class="post-photo-preview" data-photo-preview></div>`;
+}
 function empty(icon, title, message) {
   return `<div class="empty"><div class="empty-icon" aria-hidden="true">${icon}</div><b>${esc(title)}</b><p>${esc(message)}</p></div>`;
 }
@@ -313,7 +343,7 @@ function heading(title, subtitle) {
   return `<div class="heading"><div><span class="eyebrow">${esc(tr('communityEyebrow'))}</span><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div></div>`;
 }
 function feedPage() {
-  return `${heading(tr('feedTitle'), tr('feedSubtitle'))}<form class="composer" id="post-form"><div class="compose-row">${avatar(state.user.full_name)}<textarea class="compose-input" name="content" maxlength="2000" placeholder="${esc(tr('composerPlaceholder'))}" aria-label="${esc(tr('composerPlaceholder'))}"></textarea></div><div class="compose-footer"><span class="hint">${esc(tr('composerHint'))}</span><button class="button small">${esc(tr('share'))}<span aria-hidden="true"> ↗</span></button></div></form><section class="feed">${state.posts.length ? state.posts.map(postCard).join('') : empty('✳', tr('emptyFeedTitle'), tr('emptyFeedBody'))}</section>`;
+  return `${heading(tr('feedTitle'), tr('feedSubtitle'))}<form class="composer" id="post-form"><div class="compose-row">${avatar(state.user.full_name)}<textarea class="compose-input" name="content" maxlength="2000" placeholder="${esc(tr('composerPlaceholder'))}" aria-label="${esc(tr('composerPlaceholder'))}"></textarea></div>${photoFields()}<div class="compose-footer"><span class="hint">${esc(tr('composerHint'))}</span><button class="button small">${esc(tr('share'))}<span aria-hidden="true"> ↗</span></button></div></form><section class="feed">${state.posts.length ? state.posts.map(postCard).join('') : empty('✳', tr('emptyFeedTitle'), tr('emptyFeedBody'))}</section>`;
 }
 function studentCard(user) {
   const following = Boolean(user.followed_by_me);
@@ -422,6 +452,48 @@ async function refresh() {
   render();
 }
 
+function imageFileData(file) {
+  if (!file?.name) return Promise.resolve('');
+  if (!file.size || !postPhotoTypes.includes(file.type)) throw new Error(tr('photoType'));
+  if (file.size > maxPostPhotoBytes) throw new Error(tr('photoTooLarge'));
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error(tr('errorGeneric')));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function updatePhotoPreview(input) {
+  const form = input.form;
+  const preview = form.querySelector('[data-photo-preview]');
+  const currentPhoto = form.querySelector('[data-current-photo]');
+  const picker = form.elements.image_file;
+  const removal = form.elements.remove_image;
+
+  if (input === removal && removal.checked) picker.value = '';
+  if (input === picker && picker.files.length && removal) removal.checked = false;
+  preview.replaceChildren();
+  if (currentPhoto) currentPhoto.hidden = Boolean(removal.checked);
+
+  const file = picker.files[0];
+  if (!file) return;
+  try {
+    const data = await imageFileData(file);
+    if (picker.files[0] !== file) return;
+    const image = document.createElement('img');
+    image.className = 'post-image';
+    image.alt = '';
+    image.src = data;
+    preview.append(image);
+    if (currentPhoto) currentPhoto.hidden = true;
+  } catch (error) {
+    if (picker.files[0] !== file) return;
+    picker.value = '';
+    toast(error.message, true);
+  }
+}
+
 function updateTranslationSelection(select) {
   const panel = select.closest('.translation-panel');
   const button = panel?.querySelector('[data-action="translate-post"]');
@@ -441,6 +513,10 @@ function updateTranslationSelection(select) {
 }
 
 app.addEventListener('change', event => {
+  if (event.target.matches('input[name="image_file"], input[name="remove_image"]')) {
+    updatePhotoPreview(event.target);
+    return;
+  }
   if (event.target.matches('[data-a11y-pref]')) {
     state.accessibility[event.target.dataset.a11yPref] = event.target.checked;
     saveAccessibility();
@@ -537,13 +613,22 @@ app.addEventListener('submit', async event => {
       state.user = result.user; state.route = 'feed'; state.search = ''; state.authMode = 'login';
       await loadPage(); toast(tr(mode === 'login' ? 'welcomeBack' : 'welcomeCampus'));
     } else if (form.id === 'post-form') {
-      await api('posts', { method: 'POST', body: JSON.stringify({ content: values.get('content') }) });
+      const imageData = await imageFileData(values.get('image_file'));
+      await api('posts', { method: 'POST', body: JSON.stringify({
+        content: values.get('content'), image_data: imageData, image_alt: values.get('image_alt'),
+      }) });
       form.reset(); await refresh(); toast(tr('postShared'));
     } else if (form.id === 'search-form') {
       state.search = String(values.get('q') || '').trim(); await refresh();
     } else if (form.matches('.edit-post-form')) {
       const id = form.dataset.post;
-      await api(`posts/${id}`, { method: 'PUT', body: JSON.stringify({ content: values.get('content') }) });
+      const update = { content: values.get('content') };
+      const description = values.get('image_alt');
+      const imageData = await imageFileData(values.get('image_file'));
+      if (imageData) update.image_data = imageData;
+      if (values.has('remove_image')) update.remove_image = true;
+      if (imageData || description !== form.elements.image_alt.defaultValue) update.image_alt = description;
+      await api(`posts/${id}`, { method: 'PUT', body: JSON.stringify(update) });
       state.editingPostId = null; await refresh(); toast(tr('postUpdated'));
     } else if (form.id === 'event-form') {
       const startsAt = new Date(values.get('starts_at'));

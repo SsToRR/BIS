@@ -485,6 +485,42 @@ button { -webkit-appearance: none; }
 .compose-row { gap: 14px; }
 .compose-input { min-height: 82px; color: #30354c; font-size: 15px; line-height: 1.65; }
 .compose-input::placeholder { color: #a1a5b5; }
+.post-photo-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: 8px 0;
+}
+.post-photo-fields label {
+  flex: 1 1 13rem;
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  font-size: .8rem;
+  color: inherit;
+}
+.post-photo-fields input[type="file"], .post-photo-fields input[type="text"] {
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+}
+.post-photo-fields input[type="text"] {
+  padding: 7px 9px;
+  border: 1px solid #e5e7f0;
+  border-radius: 8px;
+  background: var(--surface);
+  color: inherit;
+}
+.post-photo-fields .post-photo-remove { flex-basis: 100%; display: flex; align-items: center; }
+.post-image {
+  max-width: 100%;
+  max-height: 28rem;
+  height: auto;
+  border-radius: 12px;
+}
+.post-image:not([hidden]) { display: block; }
+.post-card > .post-image, .post-photo-preview:not(:empty) { margin-bottom: 12px; }
 .compose-footer { margin-top: 8px; padding-top: 14px; border-top-color: #eef0f6; }
 .hint { color: #8d92a5; font-size: 11px; }
 .feed { gap: 16px; }
